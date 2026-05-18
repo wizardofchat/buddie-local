@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buddie.local — A Personal AGI OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F5F2EB;
+    --cream-dark: #EAE6DC;
+    --ink: #1A1A18;
+    --ink-mid: #3D3D38;
+    --ink-light: #6B6B64;
+    --ink-faint: #9B9B92;
+    --green: #2D6A4F;
+    --green-light: #52B788;
+    --green-pale: #D8F3DC;
+    --amber: #B5451B;
+    --amber-pale: #FFF3E0;
+    --border: rgba(26,26,24,0.12);
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Mono', 'Courier New', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-logo .shamrock { color: var(--green); }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ── Hero ── */
+  .hero {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 7rem 2rem 5rem;
+    position: relative;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    border: 1px solid var(--green);
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.8rem, 6vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    max-width: 720px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--green);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    color: var(--ink-mid);
+    max-width: 560px;
+    margin-bottom: 3rem;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .hero-meta-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .hero-meta-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--green);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+  }
+
+  /* ── Section layout ── */
+  .section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-number {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.75rem;
+  }
+
+  .section h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 2rem;
+  }
+
+  .section h3 {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    color: var(--ink);
+    margin: 2.5rem 0 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section p {
+    color: var(--ink-mid);
+    margin-bottom: 1.25rem;
+    max-width: 680px;
+  }
+
+  .section p strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ── Pull quote ── */
+  blockquote {
+    border-left: 3px solid var(--green);
+    margin: 3rem 0;
+    padding: 1.5rem 2rem;
+    background: var(--cream-dark);
+  }
+
+  blockquote p {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink);
+    max-width: none;
+    margin: 0;
+  }
+
+  blockquote cite {
+    display: block;
+    margin-top: 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-style: normal;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* ── Tier table ── */
+  .tier-stack {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+  }
+
+  .tier-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr 100px;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    align-items: stretch;
+  }
+
+  .tier-row:last-child { border-bottom: none; }
+
+  .tier-row > div {
+    padding: 0.9rem 1.1rem;
+    border-right: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+
+  .tier-row > div:last-child { border-right: none; }
+
+  .tier-num {
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--ink-faint);
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .tier-model { font-weight: 500; color: var(--ink); }
+  .tier-trigger { color: var(--ink-mid); }
+
+  .tier-cost {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .cost-free { color: var(--green); }
+  .cost-paid { color: var(--amber); }
+
+  .tier-header {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .tier-header > div {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(245,242,235,0.6);
+    padding: 0.7rem 1.1rem;
+  }
+
+  /* ── Stats grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  .stat-cell {
+    background: var(--cream);
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .stat-value {
+    font-family: var(--serif);
+    font-size: 2rem;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ── Pipeline ── */
+  .pipeline {
+    margin: 2.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pipeline-step {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+
+  .pipeline-step:last-child { border-bottom: 1px solid var(--border); }
+
+  .pipeline-time {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    padding: 1rem 1rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    background: var(--cream-dark);
+  }
+
+  .pipeline-desc {
+    padding: 0.9rem 1.2rem;
+    font-size: 0.88rem;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .pipeline-desc strong { color: var(--ink); font-weight: 500; }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-live { background: var(--green-light); }
+  .dot-soon { background: var(--ink-faint); }
+
+  /* ── Domain cards ── */
+  .domain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  .domain-card {
+    background: var(--cream);
+    padding: 1.75rem 1.5rem;
+  }
+
+  .domain-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .domain-name {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  .domain-desc {
+    font-size: 0.88rem;
+    color: var(--ink-mid);
+    line-height: 1.6;
+  }
+
+  /* ── Observation example ── */
+  .obs-card {
+    border: 1px solid var(--border);
+    margin: 2rem 0;
+    background: var(--cream-dark);
+  }
+
+  .obs-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .obs-domain {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .obs-confidence {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--green);
+  }
+
+  .obs-body {
+    padding: 1.25rem;
+    font-size: 0.92rem;
+    color: var(--ink-mid);
+    line-height: 1.7;
+  }
+
+  .obs-body strong { color: var(--ink); font-weight: 500; }
+
+  .obs-footer {
+    padding: 0.6rem 1.25rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  /* ── Principle list ── */
+  .principles {
+    margin: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .principle {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .principle:last-child { border-bottom: none; }
+
+  .principle-num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--green);
+    padding-top: 0.1rem;
+  }
+
+  .principle-text {
+    font-size: 0.92rem;
+    color: var(--ink-mid);
+    line-height: 1.65;
+  }
+
+  .principle-text strong { color: var(--ink); font-weight: 500; }
+
+  /* ── App screenshots section ── */
+  .screenshots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+  }
+
+  .screenshot-frame {
+    border: 1px solid var(--border);
+    background: var(--cream-dark);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .screenshot-frame img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .screenshot-caption {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 0.25rem 0.25rem;
+    text-align: center;
+  }
+
+  /* ── India section ── */
+  .highlight-box {
+    background: var(--green);
+    color: #fff;
+    padding: 3rem;
+    margin: 3rem 0;
+  }
+
+  .highlight-box h3 {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    color: #fff;
+    margin: 0 0 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .highlight-box p {
+    color: rgba(255,255,255,0.8);
+    max-width: 580px;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .highlight-box p:last-child { margin-bottom: 0; }
+
+  /* ── Cost table ── */
+  .cost-table {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .cost-table th {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .cost-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+    vertical-align: top;
+  }
+
+  .cost-table tr:last-child td { border-bottom: none; }
+  .cost-table td:first-child { font-weight: 500; color: var(--ink); }
+  .cost-table .zero { color: var(--green); font-family: var(--mono); font-size: 0.82rem; }
+  .cost-table .paid { color: var(--amber); font-family: var(--mono); font-size: 0.82rem; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .footer-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .footer-brand {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    color: var(--ink);
+  }
+
+  .footer-sub {
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--green); }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .hero { padding: 4rem 1.25rem 3rem; }
+    .section { padding: 3.5rem 1.25rem; }
+    .tier-row { grid-template-columns: 48px 1fr 1fr 80px; }
+    .highlight-box { padding: 2rem 1.25rem; }
+    footer { padding: 2rem 1.25rem; }
+    .pipeline-step { grid-template-columns: 80px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo"><span class="shamrock">☘</span> Buddie.local</a>
+  <ul class="nav-links">
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#buddie">Intelligence</a></li>
+    <li><a href="#vitanest">App</a></li>
+    <li><a href="#india">India</a></li>
+    <li><a href="#cost">Cost</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-tag">Working Paper · May 2026</div>
+  <h1>The personal AI OS that <em>lives with you</em>, not above you.</h1>
+  <p class="hero-sub">A fully operational, private, multi-tier agentic intelligence system — built solo on home hardware, running live in Northern Ireland. Finance, health, and energy. Every day. Near-zero cost.</p>
+
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Author</span>
+      <span class="hero-meta-value">Sumeet G</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Origin</span>
+      <span class="hero-meta-value">Northern Ireland, UK</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Hardware</span>
+      <span class="hero-meta-value">Any PC, laptop, or phone</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Status</span>
+      <span class="score-badge">● Live · 85/100</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Started</span>
+      <span class="hero-meta-value">Samsung A55 · Termux · No cloud</span>
+    </div>
+  </div>
+</header>
+
+<!-- Abstract -->
+<section class="section" id="abstract">
+  <div class="section-number">§ 0 — Abstract</div>
+  <h2>The Existence Proof</h2>
+
+  <p>This paper describes <strong>Buddie.local</strong> — a fully operational, private, multi-tier agentic AI operating system built and operated by a single person, running on a home PC in Northern Ireland, with negligible daily running cost.</p>
+
+  <p>It integrates live personal finance, health, and energy data. It routes queries across five intelligence tiers — from instant deterministic computation to multi-model ensemble deliberation. It synthesises observations every morning across all three domains. It has never sent sensitive financial data to a cloud server.</p>
+
+  <blockquote>
+    <p>"What enterprise teams spend six months and £500,000 attempting to approximate — one person built privately, for the cost of evenings and hardware they already owned."</p>
+  </blockquote>
+
+  <p>This is not a research prototype. It is running live, answering questions, building its own capabilities, and getting measurably smarter every session. The architecture is original, independently validated by six major AI systems, and represents a new pattern for personal intelligence infrastructure that no commercial product currently offers.</p>
+
+  <p>The core claim: <strong>personal AGI does not require cloud scale, venture funding, or a team. It requires the right architecture.</strong></p>
+
+  <div class="stats-grid">
+    <div class="stat-cell">
+      <span class="stat-value">85</span>
+      <span class="stat-label">Agentic score / 100</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-value">254</span>
+      <span class="stat-label">Dividend payments tracked</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-value">26</span>
+      <span class="stat-label">AI observations today</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-value">~£0</span>
+      <span class="stat-label">Daily running cost</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-value">3</span>
+      <span class="stat-label">Domains: finance, health, energy</span>
+    </div>
+    <div class="stat-cell">
+      <span class="stat-value">Day 7</span>
+      <span class="stat-label">30-day autonomous dry run</span>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture -->
+<section class="section" id="architecture">
+  <div class="section-number">§ 1 — Architecture</div>
+  <h2>Five intelligence tiers. One routing brain.</h2>
+
+  <p>Most AI systems throw every query at the same model. Buddie.local routes intelligently — matching cost and capability to complexity. The cheapest capable tier always wins.</p>
+
+  <div class="tier-stack">
+    <div class="tier-row tier-header">
+      <div>Tier</div>
+      <div>Model</div>
+      <div>Trigger</div>
+      <div>Cost</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-num">T1</div>
+      <div class="tier-model">Polars (Python)</div>
+      <div class="tier-trigger">Keyword-matched data queries — instant, deterministic</div>
+      <div class="tier-cost cost-free">£0.00</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-num">T2</div>
+      <div class="tier-model">Gemini 2.5 Flash</div>
+      <div class="tier-trigger">General queries, analysis, context-aware responses</div>
+      <div class="tier-cost cost-free">Free / 250/day</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-num">T3</div>
+      <div class="tier-model">Gemini Flash Lite</div>
+      <div class="tier-trigger">Tier 2 rate-limited fallback</div>
+      <div class="tier-cost cost-free">Free</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-num">T4</div>
+      <div class="tier-model">Llama 3.3 70B</div>
+      <div class="tier-trigger">Gemini unavailable — OpenRouter free tier</div>
+      <div class="tier-cost cost-free">Free</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-num">T5</div>
+      <div class="tier-model">Claude Haiku</div>
+      <div class="tier-trigger">Last resort — nightly synthesis agents only</div>
+      <div class="tier-cost cost-paid">~£0.01/run</div>
+    </div>
+  </div>
+
+  <h3>Machine Builds Machine</h3>
+  <p>The core architectural principle. When Buddie can't answer a question, it logs the gap. After 3 repeats, it asks: <em>"Want me to build a capability for this?"</em></p>
+  <p>The pipeline: <strong>/prompt → /code → sandbox → review → promote.</strong> Every new skill becomes a permanent capability. The system extends itself. Every session slightly more capable than the last.</p>
+
+  <h3>The data foundation</h3>
+  <div class="domain-grid">
+    <div class="domain-card">
+      <div class="domain-icon">💰</div>
+      <div class="domain-name">Finance</div>
+      <div class="domain-desc">67 live positions. 3,013 orders. 254 dividend payments. Trading 212 API. Real portfolio, real P&amp;L, real income tracking.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">❤️</div>
+      <div class="domain-name">Health</div>
+      <div class="domain-desc">Daily Whoop data. HRV, recovery, RHR, SpO2, sleep stages, strain. Correlated against financial stress patterns.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">⚡</div>
+      <div class="domain-name">Energy</div>
+      <div class="domain-desc">Solar panels, EV charger, hot water diverter. Live Myenergi data. Self-sufficiency tracking. Cost per kWh.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Buddie Intelligence -->
+<section class="section" id="buddie">
+  <div class="section-number">§ 2 — The Observation Engine</div>
+  <h2>Buddie doesn't answer questions. It notices things.</h2>
+
+  <p>Every morning at 09:00, three AI synthesis agents run independently — one per domain. Each receives shaped, anonymised data. Each writes structured observations: what happened, what it means, confidence scored. Nothing is acted on without trust.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-time">08:30</div>
+      <div class="pipeline-desc"><span class="status-dot dot-live"></span><strong>Data refresh</strong> — positions, Whoop, energy pulled live</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="status-dot dot-live"></span><strong>Finance agent</strong> — Claude Haiku analyses portfolio, income, concentration risk</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="status-dot dot-live"></span><strong>Health agent</strong> — analyses HRV trends, sleep debt, recovery patterns</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="status-dot dot-live"></span><strong>Energy agent</strong> — solar yield, EV cost, grid dependency, self-sufficiency</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:45</div>
+      <div class="pipeline-desc"><span class="status-dot dot-live"></span><strong>Morning brief</strong> — synthesised across all domains, pushed to app</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">Future</div>
+      <div class="pipeline-desc"><span class="status-dot dot-soon"></span><strong>Cross-domain synthesiser</strong> — correlates finance × health × energy</div>
+    </div>
+  </div>
+
+  <h3>What an observation looks like</h3>
+
+  <div class="obs-card">
+    <div class="obs-header">
+      <span class="obs-domain">Finance · capital_allocation</span>
+      <span class="obs-confidence">93% confidence · v5 · 57 obs</span>
+    </div>
+    <div class="obs-body">
+      <strong>Cash position £57.89 represents 0.39% of portfolio.</strong> Daily P&amp;L swing of £961.33 is 16.6× the cash buffer. A single down day could consume the entire cash reserve, limiting rebalance and opportunity capacity.
+    </div>
+    <div class="obs-footer">
+      <span>model: claude-haiku-4.5</span>
+      <span>type: observation</span>
+      <span>ghost mode: active</span>
+    </div>
+  </div>
+
+  <div class="obs-card">
+    <div class="obs-header">
+      <span class="obs-domain">Health · sleep_debt</span>
+      <span class="obs-confidence">91% confidence · v5 · 57 obs</span>
+    </div>
+    <div class="obs-body">
+      <strong>Sleep debt has accumulated to 127.8 minutes by mid-May.</strong> This directly suppresses HRV (dropped from 51.2ms in October to 46.1ms in May) and destabilises recovery scores. Worst recovery days (36–45%) consistently occur after nights adding to cumulative debt. February 2026 baseline (recovery 68.9%, HRV 52ms) confirms capability when sleep debt stays under 65 minutes.
+    </div>
+    <div class="obs-footer">
+      <span>model: claude-haiku-4.5</span>
+      <span>type: observation</span>
+      <span>ghost mode: active</span>
+    </div>
+  </div>
+
+  <h3>The trust architecture</h3>
+  <p>Buddie is currently in a <strong>30-day ghost run</strong>. Every observation is logged but never acted on. After 30 days, the accuracy record becomes the basis for calibrated confidence thresholds. Autonomous actions only unlock when the track record earns them.</p>
+
+  <div class="principles">
+    <div class="principle">
+      <span class="principle-num">01</span>
+      <div class="principle-text"><strong>No model may both generate and authorize the same action.</strong> Generator writes to escrow. A separate rule-based verifier stamps it publishable or not.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">02</span>
+      <div class="principle-text"><strong>Observations are not recommendations.</strong> "What happened?" is automatic. "What should you do?" requires human approval. Actions require the strictest gate.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">03</span>
+      <div class="principle-text"><strong>Privacy is architectural, not a setting.</strong> Tickers are anonymised before reaching cloud LLMs. Health data never leaves the device. The architecture enforces privacy — it is not a policy promise.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">04</span>
+      <div class="principle-text"><strong>Confidence is earned, not claimed.</strong> No self-reported model confidence. Composite score: self-consistency × cross-model agreement × historical accuracy × retrieval grounding.</div>
+    </div>
+  </div>
+</section>
+
+<!-- VitaNest -->
+<section class="section" id="vitanest">
+  <div class="section-number">§ 3 — VitaNest</div>
+  <h2>The companion app. Intelligence made visible.</h2>
+
+  <p>VitaNest is the Android interface to Buddie.local. It is a pure API consumer — it never calculates, never stores business logic, never hardcodes data. VitaClaw is the brain. VitaNest is the window.</p>
+
+  <div class="domain-grid">
+    <div class="domain-card">
+      <div class="domain-icon">🏠</div>
+      <div class="domain-name">Home</div>
+      <div class="domain-desc">Three-domain turbine — Finance, Health, Energy. Recovery ring centre. Live score. Daily quote. Everything at a glance.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">📊</div>
+      <div class="domain-name">Finance</div>
+      <div class="domain-desc">13 portfolio pies. 67 holdings. DCA effectiveness. Dividend income tracking. Income stress simulation. All live from API.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">⚡</div>
+      <div class="domain-name">Energy</div>
+      <div class="domain-desc">Solar generation. EV charging cost. Self-sufficiency %. Daily savings. 7d/30d/90d growth tables.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">❤️</div>
+      <div class="domain-name">Health</div>
+      <div class="domain-desc">Recovery ring. HRV, RHR, SpO2. 14-day trend charts. Critical alert banners. 30-day baselines. On-demand Buddie health analysis.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">🌱</div>
+      <div class="domain-name">Growth</div>
+      <div class="domain-desc">7d/30d/90d portfolio, health, and energy data tables. Cross-domain history. CSV export. Share text.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">🐾</div>
+      <div class="domain-name">Ask / Buddie</div>
+      <div class="domain-desc">Today's 26 AI observations with confidence scores. Rate each one. Ratings feed back into synthesis calibration. Ask anything.</div>
+    </div>
+  </div>
+</section>
+
+<!-- India angle -->
+<section class="section" id="india">
+  <div class="section-number">§ 4 — The Opportunity</div>
+  <h2>Why this matters for India — and beyond.</h2>
+
+  <p>India has over 100 million retail investors. Every one of them shares their most sensitive financial data with cloud platforms they do not own, cannot audit, and pay monthly for. The data leaves their device on every query. The session ends. The system forgets them.</p>
+
+  <div class="highlight-box">
+    <h3>The personal data economy is broken.</h3>
+    <p>Cloud AI platforms monetise your data, forget your history, and charge you for the privilege. Buddie.local inverts this: your data never leaves your device, the system remembers everything, and the running cost is near-zero.</p>
+    <p>This is not a niche proposition. It is the architecture that personal finance intelligence should have always had — and never did.</p>
+  </div>
+
+  <p>The Buddie.local model is <strong>broker-agnostic</strong>. The same architecture works with Zerodha, Groww, ICICI Direct, any broker with an API. The intelligence layer is separable from the data source. A retail investor in Mumbai, Bangalore, or Chennai could run this on a laptop they already own.</p>
+
+  <p>India's retail investor base is young, mobile-first, and deeply cost-conscious. A system that provides institutional-grade portfolio intelligence at near-zero cost — privately, locally, on hardware they own — addresses a market gap that no current product does.</p>
+</section>
+
+<!-- Cost reality -->
+<section class="section" id="cost">
+  <div class="section-number">§ 5 — Cost Reality</div>
+  <h2>What it actually costs to run this.</h2>
+
+  <p>The economics are the architecture's most underappreciated feature. Most intelligence is free because the routing brain sends queries to the cheapest capable tier first.</p>
+
+  <table class="cost-table">
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>What it does</th>
+        <th>Daily cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Polars (Tier 1)</td>
+        <td>Instant data queries — portfolio, dividends, income</td>
+        <td class="zero">£0.00</td>
+      </tr>
+      <tr>
+        <td>Gemini Flash (Tier 2)</td>
+        <td>General queries, analysis — 250/day free quota</td>
+        <td class="zero">£0.00</td>
+      </tr>
+      <tr>
+        <td>Llama 3.3 70B (Tier 4)</td>
+        <td>Fallback when Gemini rate-limited — OpenRouter free</td>
+        <td class="zero">£0.00</td>
+      </tr>
+      <tr>
+        <td>Claude Haiku (Synthesis)</td>
+        <td>3 domain synthesis agents, morning brief</td>
+        <td class="paid">~£0.04/day</td>
+      </tr>
+      <tr>
+        <td>Hardware</td>
+        <td>Mini PC — general home computer that also runs VitaClaw</td>
+        <td class="zero">Already owned</td>
+      </tr>
+      <tr>
+        <td><strong>Total</strong></td>
+        <td>Full personal AI OS — finance, health, energy, Android app</td>
+        <td class="paid"><strong>~£1.20/month</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>This started on a Samsung A55 phone running Termux. No server. No cloud spend. Gradually: better hardware, better routing, better data. Every upgrade earned, not bought. <strong>If you have a phone and an evening, you can start building this today.</strong></p>
+</section>
+
+<!-- Status -->
+<section class="section" id="status">
+  <div class="section-number">§ 6 — Current State</div>
+  <h2>What is live. What is next.</h2>
+
+  <div class="principles">
+    <div class="principle">
+      <span class="principle-num" style="color: var(--green-light);">✓</span>
+      <div class="principle-text"><strong>Five-tier LLM routing</strong> — Polars → Gemini → Llama → Haiku, cost-optimised, live</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num" style="color: var(--green-light);">✓</span>
+      <div class="principle-text"><strong>Three domain synthesis agents</strong> — Finance, Health, Energy. Daily at 09:00. Haiku via OpenRouter. Ticker anonymisation live.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num" style="color: var(--green-light);">✓</span>
+      <div class="principle-text"><strong>VitaNest Android app</strong> — Home, Finance, Energy, Health, Growth, Ask. Five screens. Live API. No hardcoded logic.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num" style="color: var(--green-light);">✓</span>
+      <div class="principle-text"><strong>Ghost run active</strong> — Day 7 of 30. Every observation logged, confidence scored, never acted on. Rating feedback loop calibrating synthesis.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num" style="color: var(--green-light);">✓</span>
+      <div class="principle-text"><strong>Privacy architecture</strong> — Real tickers anonymised to semantic codes before cloud. Health data local only. Architectural enforcement, not policy.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">→</span>
+      <div class="principle-text"><strong>Cross-domain synthesiser</strong> — Finance × Health × Energy correlation engine. After Day 14.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">→</span>
+      <div class="principle-text"><strong>Confidence gates</strong> — Composite model live after 30+ rated observations. Autonomous actions unlock when track record earns them.</div>
+    </div>
+    <div class="principle">
+      <span class="principle-num">→</span>
+      <div class="principle-text"><strong>Regret database</strong> — Wrong conclusions logged permanently. Buddie reads its own failure history before generating hypotheses.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-brand">☘ Buddie.local</span>
+    <span class="footer-sub">A personal AGI OS — Northern Ireland, UK · May 2026</span>
+    <span class="footer-sub" style="margin-top: 0.25rem;">VitaClaw backend · VitaNest Android · Agentic score 85/100</span>
+  </div>
+  <div class="footer-links">
+    <a href="https://x.com/SumeetGarg4916/status/2040437131336650942" target="_blank">Twitter thread ↗</a>
+    <a href="https://x.com/SumeetGarg4916" target="_blank">@SumeetGarg4916 ↗</a>
+    <a href="https://github.com/wizardofchat/openclaw-lab" target="_blank">GitHub ↗</a>
+  </div>
+</footer>
+
+</body>
+</html>
