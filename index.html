@@ -142,6 +142,75 @@
     .tier-row { grid-template-columns: 56px 1fr 1fr 68px; }
     .highlight-box { padding: 1.75rem 1.25rem; } footer { padding: 2rem 1.25rem; }
   }
+
+  /* ── Phone frames ── */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem 2rem;
+    margin: 2.5rem 0;
+  }
+  .phone-frame-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .phone-frame {
+    width: 100%;
+    max-width: 200px;
+    background: #1A1A18;
+    border-radius: 28px;
+    padding: 12px 8px 16px;
+    box-shadow: 0 8px 32px rgba(26,26,24,0.25), 0 0 0 1px rgba(26,26,24,0.15);
+    position: relative;
+  }
+  .phone-frame-dark {
+    background: #0A0A0A;
+  }
+  .phone-notch {
+    width: 60px;
+    height: 8px;
+    background: #2A2A28;
+    border-radius: 4px;
+    margin: 0 auto 8px;
+  }
+  .phone-screen {
+    border-radius: 18px;
+    overflow: hidden;
+    background: #F5F2EB;
+    line-height: 0;
+  }
+  .phone-screen img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .phone-caption {
+    text-align: center;
+    max-width: 200px;
+  }
+  .phone-caption-title {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+  }
+  .phone-caption-desc {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    line-height: 1.5;
+  }
+  @media (max-width: 700px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem 1rem; }
+  }
+  @media (max-width: 440px) {
+    .gallery-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem 0.75rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -153,6 +222,7 @@
     <li><a href="#agents">Agents</a></li>
     <li><a href="#synthesis">Synthesis</a></li>
     <li><a href="#vitanest">App</a></li>
+    <li><a href="#gallery">Screens</a></li>
     <li><a href="#opportunity">Opportunity</a></li>
     <li><a href="#cost">Cost</a></li>
     <li><a href="#limitations">Limitations</a></li>
@@ -673,9 +743,99 @@
   <p>SpO2 charts display two threshold lines: 92% warning (amber) and 90% critical (red). Breaches surface as alert banners with exact dates and values. The 14-day and all-time toggle changes the chart range with a single tap. 30-day baselines anchor each metric so trends are contextualised against personal history, not population averages.</p>
 </section>
 
+
+<!-- Gallery -->
+<section class="section" id="gallery">
+  <div class="section-number">§ 5 — The App in Action</div>
+  <h2>Live screenshots. No mockups.</h2>
+  <p>All screens shown are from the live running system. Data shown is for illustrative purposes only and is not financial or medical advice.</p>
+
+  <div class="gallery-grid">
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Home screen"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Home</div>
+        <div class="phone-caption-desc">Three-domain turbine. Energy, Finance, Health. Recovery ring. Live score.</div>
+      </div>
+    </div>
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Finance DCA detail"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Finance · DCA</div>
+        <div class="phone-caption-desc">Monthly buys vs avg price. Price distribution. DCA effectiveness. Dividend history. Verdict.</div>
+      </div>
+    </div>
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Growth table"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Growth</div>
+        <div class="phone-caption-desc">7d / 30d / 90d toggle. Daily equity, P&L, income vs target. CSV export.</div>
+      </div>
+    </div>
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame phone-frame-dark">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Health analytics"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Health Analytics</div>
+        <div class="phone-caption-desc">SpO2 chart with 92% warning / 90% critical thresholds. Alert banners. 30-day baselines.</div>
+      </div>
+    </div>
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Buddie health synthesis"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Buddie Health Insight</div>
+        <div class="phone-caption-desc">Root cause analysis. Worst period identified. Actionable recommendation with personal baseline.</div>
+      </div>
+    </div>
+
+    <div class="phone-frame-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Buddie observations"/>
+        </div>
+      </div>
+      <div class="phone-caption">
+        <div class="phone-caption-title">Ask · Buddie</div>
+        <div class="phone-caption-desc">26 AI observations. Confidence scores. Domain tags. Rate each — feeds synthesis calibration.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- Opportunity -->
 <section class="section" id="opportunity">
-  <div class="section-number">§ 5 — The Opportunity</div>
+  <div class="section-number">§ 6 — The Opportunity</div>
   <h2>Why local-first personal finance intelligence matters.</h2>
   <p>India has over 100 million retail investors. The UK has 11 million ISA holders. Every one of them shares their most sensitive financial data with cloud platforms they do not own, cannot audit, and pay monthly for.</p>
 
@@ -691,7 +851,7 @@
 
 <!-- Cost -->
 <section class="section" id="cost">
-  <div class="section-number">§ 6 — Cost Reality</div>
+  <div class="section-number">§ 7 — Cost Reality</div>
   <h2>What it actually costs. Observed, not estimated.</h2>
 
   <table class="cost-table">
@@ -727,7 +887,7 @@
 
 <!-- Status -->
 <section class="section" id="status">
-  <div class="section-number">§ 7 — Current State</div>
+  <div class="section-number">§ 8 — Current State</div>
   <h2>What is live. What is next.</h2>
   <div class="principles">
     <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Five-tier cost-aware routing</strong> — Polars → Gemini → Llama → Haiku → Offline. Live, tested, observable via logs.</div></div>
@@ -743,7 +903,7 @@
 
 <!-- Limitations -->
 <section class="section" id="limitations">
-  <div class="section-number">§ 8 — Honest Limitations</div>
+  <div class="section-number">§ 9 — Honest Limitations</div>
   <h2>What this is not. What still needs building.</h2>
   <p>A credible architecture document acknowledges its boundaries clearly.</p>
   <div class="limitation-box">
