@@ -694,6 +694,58 @@
   </div>
 </section>
 
+<!-- Agentic Trade Engine -->
+<section class="section" id="agentic-trade">
+  <div class="section-number">§ 3.5 — Agentic Trade Engine</div>
+  <h2>Buddie selects. You confirm. Trust earns automation.</h2>
+
+  <p>Every morning, Buddie runs a fully autonomous dividend selection pipeline. It evaluates every holding in the portfolio against constitution rules — yield thresholds, covered call concentration limits, budget constraints, payment history — and selects the optimal trade to close the monthly income gap. Nobody asks it to. It just runs.</p>
+
+  <p>The Trading 212 API is integrated and capable of execution. Automation is gated on trust, not capability. The governance model is explicit: <strong>no model may both generate and authorise the same action.</strong> Buddie proposes. The human confirms via a single tap in VitaNest. Every confirmation or rejection feeds the confidence calibration loop.</p>
+
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Candidate evaluation</strong> — all holdings scored against constitution: yield, concentration, budget, payment history</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Dolphin 3 (local)</strong> — offline model selects optimal candidate from passed set. No data leaves device.</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Haiku risk gate</strong> — cloud model applies yield trap, sustainability, and concentration checks. Blocks high-risk selections.</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">09:00</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Trade written to VitaNest</strong> — ticker, shares, capital, projected income, ex-div window. Human confirms or skips.</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">Future</div>
+      <div class="pipeline-desc"><span class="dot"></span><strong>Autonomous execution</strong> — T212 API ready. Unlocks when 30-day confidence record earns it.</div>
+    </div>
+  </div>
+
+  <div class="trust-grid">
+    <div class="trust-item">
+      <div class="trust-number">01</div>
+      <div class="trust-text"><strong>Constitution-bound.</strong> Every decision checked against a YAML rulebook — yield limits, concentration caps, budget constraints. Rules are data, not code.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-number">02</div>
+      <div class="trust-text"><strong>Two-model deliberation.</strong> Dolphin selects offline. Haiku challenges. Disagreement is logged. Provenance tracked on every trade.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-number">03</div>
+      <div class="trust-text"><strong>Human as verifier.</strong> Bought or Skipped — one tap. Not a workaround for incomplete automation. The governance gate by design.</div>
+    </div>
+    <div class="trust-item">
+      <div class="trust-number">04</div>
+      <div class="trust-text"><strong>Execution ready.</strong> T212 API integrated. Automation withheld until the confidence record earns it — not because the capability is absent.</div>
+    </div>
+  </div>
+</section>
+
 <!-- VitaNest -->
 <section class="section" id="vitanest">
   <div class="section-number">§ 4 — VitaNest</div>
