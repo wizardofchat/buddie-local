@@ -231,13 +231,13 @@
 </nav>
 
 <header class="hero">
-  <div class="hero-tag">Working Paper · May 2026</div>
+  <div class="hero-tag">Working Paper · May 2026 · Revised 16 Nov 2026</div>
   <h1>Private decision intelligence for <em>personal finance</em>, health and energy.</h1>
-  <p class="hero-sub">A local-first personal agent system built solo in 93 days on personal time and consumer hardware. Runs daily in the UK. Near-zero cost. Data stays on-device.</p>
+  <p class="hero-sub">A local-first personal agent system, built solo on personal time and consumer hardware. Running daily in the UK since February 2026. All data is stored locally; this revision states plainly which analysis uses a cloud model.</p>
   <div class="hero-meta">
     <div class="hero-meta-item">
       <span class="hero-meta-label">Location</span>
-      <span class="hero-meta-value">Belfast, UK</span>
+      <span class="hero-meta-value">UK</span>
     </div>
     <div class="hero-meta-item">
       <span class="hero-meta-label">First commit</span>
@@ -245,11 +245,11 @@
     </div>
     <div class="hero-meta-item">
       <span class="hero-meta-label">Hardware</span>
-      <span class="hero-meta-value">Mini PC · WSL2 · Personal only</span>
+      <span class="hero-meta-value">Mini PC · WSL2 · CPU only</span>
     </div>
     <div class="hero-meta-item">
       <span class="hero-meta-label">Status</span>
-      <span class="status-pill">● Live · Day 93</span>
+      <span class="status-pill">● Running daily · checked 15 Nov 2026</span>
     </div>
   </div>
 </header>
@@ -259,21 +259,21 @@
   <div class="section-number">§ 0 — Abstract</div>
   <h2>The Existence Proof</h2>
   <p>Buddie.local is a live, privately built personal agent system. It started on a Samsung A55 phone running Termux on 25 February 2026 and now runs on a home Mini PC in the UK. Built entirely outside working hours on personal hardware.</p>
-  <p>It integrates live personal finance, health, and energy data — all stored and processed locally. An Android companion app consumes its REST API. Three AI agents synthesise observations every morning. A structured ensemble deliberates on complex decisions at ~£0.001 per query.</p>
+  <p>It stores personal finance, health and energy data locally in PostgreSQL. An Android companion app reads its REST API. Scheduled agents fetch data, write reports and produce daily observations. Since the first version of this paper in May 2026, both main data providers have changed, and the system has gained a second kind of agent: ones that run from a written mission file, and one that turns a GitHub issue into a pull request.</p>
   <blockquote>
-    <p>"Known-data queries are answered locally before any LLM is called. Sensitive financial data never leaves the device by architectural design — not by policy promise."</p>
+    <p>This revision removes or corrects every claim in the May paper that the system's own logs do not support. Where something is planned, it says planned.</p>
   </blockquote>
-  <p>This paper documents the architecture, the engineering decisions, the real operational metrics, and the honest limitations. It is an existence proof: a disciplined local-first architecture can deliver meaningful personal financial intelligence at near-zero cost.</p>
+  <p>This paper documents the architecture, what actually runs, what is measured and what is not, and the limitations. It is an existence proof that one person can build and run this on hardware they already own. It is not a claim that the system is finished, accurate or private in every respect.</p>
 
   <div class="stats-grid">
-    <div class="stat-cell"><span class="stat-value">83</span><span class="stat-label">Days building</span></div>
-    <div class="stat-cell"><span class="stat-value">170+</span><span class="stat-label">Git commits</span></div>
-    <div class="stat-cell"><span class="stat-value">254</span><span class="stat-label">Dividends tracked</span></div>
-    <div class="stat-cell"><span class="stat-value">£0.04</span><span class="stat-label">Observed daily cost</span></div>
-    <div class="stat-cell"><span class="stat-value">~92%</span><span class="stat-label">Queries at zero cost</span></div>
-    <div class="stat-cell"><span class="stat-value">Active</span><span class="stat-label">Agentic trades</span></div>
+    <div class="stat-cell"><span class="stat-value">81</span><span class="stat-label">Test functions · 10 files · no CI</span></div>
+    <div class="stat-cell"><span class="stat-value">0</span><span class="stat-label">Autonomous real-money actions</span></div>
+    <div class="stat-cell"><span class="stat-value">736</span><span class="stat-label">Observations written · 30 days</span></div>
+    <div class="stat-cell"><span class="stat-value">75%</span><span class="stat-label">Of those stored hidden</span></div>
+    <div class="stat-cell"><span class="stat-value">7</span><span class="stat-label">Questions asked · 30 days</span></div>
+    <div class="stat-cell"><span class="stat-value">12/13</span><span class="stat-label">Coding-agent runs completed · 7 days</span></div>
   </div>
-  <div class="disclaimer">⚠ All figures shown in this paper are for illustrative purposes only. This is not financial advice. Past performance is not indicative of future results.</div>
+  <div class="disclaimer">⚠ Figures come from read-only checks of the live system on 15 Nov 2026 unless marked otherwise. This is not financial advice.</div>
 </section>
 
 <!-- Architecture -->
@@ -281,6 +281,7 @@
   <div class="section-number">§ 1 — Architecture</div>
   <h2>Governor, not model. Deterministic first, LLM last.</h2>
   <p>The central design is a <strong>governor layer</strong> that routes every query to the cheapest capable tier. Every query passes through five steps: understand intent → audit data freshness → extract surgical context → route to tier → log everything.</p>
+  <p>That query path is the May design. It has not been re-verified for this revision and it is barely exercised: 7 questions in the 30 days to 15 Nov 2026. The work since May has gone into scheduled agents, imports and reports, which is where the rest of this paper spends its time.</p>
 
   <!-- SVG Architecture Diagram -->
   <div class="arch-wrap">
@@ -292,804 +293,401 @@
         <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
           <path d="M0,0 L0,6 L8,3 z" fill="#2D6A4F"/>
         </marker>
-        <marker id="arr-both" markerWidth="8" markerHeight="8" refX="2" refY="3" orient="auto">
-          <path d="M8,0 L8,6 L0,3 z" fill="#2D6A4F"/>
-        </marker>
       </defs>
 
-      <!-- Background -->
       <rect width="860" height="520" fill="#F5F2EB"/>
 
-      <!-- ── INPUT COLUMN ── -->
-      <text x="36" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">INPUT</text>
-
-      <!-- Telegram -->
+      <!-- input column -->
+      <text x="36" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">INPUT</text>
       <rect x="4" y="30" width="64" height="32" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="36" y="50" font-size="9.5" fill="#1A1A18" text-anchor="middle" font-weight="500">Telegram</text>
-
-      <!-- Agentic Loops -->
-<section class="section" id="agentic-loops">
-  <div class="section-number">§ 3.6 — Two Agentic Loops</div>
-  <h2>Two loops. Running every morning.<br><em>Neither waits to be asked.</em></h2>
-  <p>Buddie operates two autonomous loops daily. Both perceive, reason, act, verify, and learn within defined boundaries — the same design philosophy as production robo-advisors. The guardrails are not a limitation. They are the mandate.</p>
-  <p style="font-size:0.85rem;color:var(--ink-light);font-style:italic;margin-top:-0.5rem;">Validated by LLM council review (ChatGPT, Copilot, Perplexity) — revised framing June 2026.</p>
-
-  <!-- SVG diagram -->
-  <div style="margin:2.5rem 0;overflow-x:auto;">
-  <svg width="100%" viewBox="0 0 680 780" style="max-width:720px;display:block;margin:0 auto;" role="img">
-    <defs>
-      <marker id="arr-l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#6B6B64" stroke-width="1.5" stroke-linecap="round"/>
-      </marker>
-      <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round"/>
-      </marker>
-    </defs>
-
-    <!-- titles -->
-    <text x="170" y="22" text-anchor="middle" font-family="'DM Mono',monospace" font-size="10" fill="#6B6B64" letter-spacing="1">LOOP 1 — PAPER TRADE</text>
-    <text x="510" y="22" text-anchor="middle" font-family="'DM Mono',monospace" font-size="10" fill="#6B6B64" letter-spacing="1">LOOP 2 — MARKET CORRELATION</text>
-    <line x1="340" y1="10" x2="340" y2="720" stroke="#EAE6DC" stroke-width="1" stroke-dasharray="4 4"/>
-
-    <!-- LOOP 1 -->
-    <!-- PERCEIVE -->
-    <rect x="30" y="36" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="50" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">PERCEIVE  09:00</text>
-    <rect x="30" y="64" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="95" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">T212 agent</text>
-    <text x="95" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">67 live positions</text>
-    <rect x="180" y="64" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="245" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Finance shaper</text>
-    <text x="245" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">+ market context</text>
-    <line x1="170" y1="122" x2="170" y2="140" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- REASON -->
-    <rect x="30" y="140" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="154" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">REASON</text>
-    <rect x="30" y="168" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="95" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">dolphin3:8b</text>
-    <text x="95" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">selects candidate</text>
-    <rect x="180" y="168" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="245" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Haiku gate</text>
-    <text x="245" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">anonymised tickers</text>
-    <line x1="170" y1="226" x2="170" y2="244" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- ACT -->
-    <rect x="30" y="244" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="258" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#B5451B" letter-spacing="0.5">ACT — autonomous</text>
-    <rect x="30" y="272" width="280" height="48" rx="6" fill="white" stroke="#f5c4b0" stroke-width="1"/>
-    <text x="170" y="292" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">executes vs £300 paper budget</text>
-    <text x="170" y="308" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">you rate after — Bought / Skipped</text>
-    <line x1="170" y1="330" x2="170" y2="348" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- VERIFY -->
-    <rect x="30" y="348" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="362" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">VERIFY</text>
-    <rect x="30" y="376" width="280" height="56" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="170" y="398" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">verification agent</text>
-    <text x="170" y="414" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">matches dividends_history.json</text>
-    <text x="170" y="428" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">fills actual_income_gbp</text>
-    <line x1="170" y1="442" x2="170" y2="460" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- LEARN -->
-    <rect x="30" y="460" width="280" height="20" rx="3" fill="#D8F3DC"/>
-    <text x="170" y="474" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#2D6A4F" font-weight="500" letter-spacing="0.5">LEARN ✓ loop closes</text>
-    <rect x="30" y="488" width="280" height="56" rx="6" fill="#D8F3DC" stroke="#52B788" stroke-width="1"/>
-    <text x="170" y="510" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">buddie_ticker_weights</text>
-    <text x="170" y="526" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">reliability weight → next score</text>
-    <text x="170" y="540" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">+ counterfactual memory</text>
-    <path d="M30 516 Q10 516 10 318 Q10 196 30 196" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
-
-    <!-- LOOP 2 -->
-    <!-- PERCEIVE -->
-    <rect x="370" y="36" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="50" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">PERCEIVE  06:45</text>
-    <rect x="370" y="64" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="432" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">market_data</text>
-    <text x="432" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">9 indices, 24 ETFs</text>
-    <rect x="515" y="64" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="577" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">FX rates</text>
-    <text x="577" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">GBPUSD, GBPEUR</text>
-    <line x1="505" y1="122" x2="505" y2="140" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- REASON -->
-    <rect x="370" y="140" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="154" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">REASON</text>
-    <rect x="370" y="168" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="432" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Pearson corr.</text>
-    <text x="432" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">weekly, FX-adjusted</text>
-    <rect x="515" y="168" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="577" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">market_context</text>
-    <text x="577" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">→ Haiku sees why</text>
-    <line x1="505" y1="226" x2="505" y2="244" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- SYNTHESISE -->
-    <rect x="370" y="244" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="258" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">SYNTHESISE  09:05</text>
-    <rect x="370" y="272" width="270" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="505" y="292" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">finance_synthesis (Haiku)</text>
-    <text x="505" y="308" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">market-aware observations</text>
-    <line x1="505" y1="330" x2="505" y2="348" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- PROJECT -->
-    <rect x="370" y="348" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="362" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#B5451B" letter-spacing="0.5">PROJECT  07:00</text>
-    <rect x="370" y="376" width="270" height="48" rx="6" fill="white" stroke="#f5c4b0" stroke-width="1"/>
-    <text x="505" y="398" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">projection_agent</text>
-    <text x="505" y="414" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">corr × index move → ETF P&amp;L</text>
-    <line x1="505" y1="434" x2="505" y2="452" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- VERIFY -->
-    <rect x="370" y="452" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="466" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">VERIFY  08:45</text>
-    <rect x="370" y="480" width="270" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="505" y="500" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">projection_validator</text>
-    <text x="505" y="516" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">projected vs actual accuracy</text>
-    <line x1="505" y1="538" x2="505" y2="556" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- LEARN -->
-    <rect x="370" y="556" width="270" height="20" rx="3" fill="#D8F3DC"/>
-    <text x="505" y="570" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#2D6A4F" font-weight="500" letter-spacing="0.5">LEARN → accumulating</text>
-    <rect x="370" y="584" width="270" height="48" rx="6" fill="#D8F3DC" stroke="#52B788" stroke-width="1"/>
-    <text x="505" y="604" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">accuracy_pct per ETF</text>
-    <text x="505" y="620" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">history improves correlation</text>
-    <path d="M640 608 Q660 608 660 388 Q660 168 640 168" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
-
-    <!-- Governing principle -->
-    <rect x="30" y="660" width="610" height="52" rx="8" fill="#EAE6DC" stroke="rgba(26,26,24,0.08)" stroke-width="1"/>
-    <text x="335" y="681" text-anchor="middle" font-family="'DM Serif Display',Georgia,serif" font-size="11" font-style="italic" fill="#1A1A18">No model may both generate and authorize the same action.</text>
-    <text x="335" y="700" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">Day 11 of 30-day dry run · 34/34 tests passing · ghost mode active</text>
-  </svg>
-  </div>
-
-  <!-- Loop 1 detail -->
-  <div style="display:grid;gap:1.5rem;margin-bottom:2rem;">
-    <div style="border:1px solid var(--border);border-radius:10px;padding:2rem;background:white;">
-      <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Loop 1 — Paper Trade</div>
-      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:0.75rem;">Goal-directed constrained trading agent</h3>
-      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:1rem;">Operating within an explicit investment mandate — the same design philosophy as production robo-advisors. The guardrails (yield 4–35%, covered call concentration cap, £300 paper budget) are the mandate, not a limitation. The policy is the selection, scoring, and learning that happens within them.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Executes autonomously against £300 paper budget</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;dolphin3:8b proposes — Haiku gates independently</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Dividend verified after window closes</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Reliability weights updated from outcomes</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Counterfactual memory — all candidates stored</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Phase 2: watchlist expansion earns larger action space</div>
-      </div>
-    </div>
-
-    <div style="border:1px solid var(--border);border-radius:10px;padding:2rem;background:white;">
-      <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Loop 2 — Market Correlation</div>
-      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:0.75rem;">Autonomous market intelligence system</h3>
-      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:1rem;">Perceives overnight index moves, computes FX-adjusted weekly correlations across 9 indices and 24 ETFs, and injects market context into Haiku's synthesis. Buddie now reasons about <em>why</em> the portfolio moved — not just that it moved. Projection accuracy accumulates daily toward mode switching.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;9 indices, 24 ETFs, 4 FX pairs — daily append</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Weekly Pearson correlation, FX-adjusted, 3 windows</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;market_context.json → finance_shaped.json daily</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Projection accuracy tracked per ETF</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">→ &nbsp;Mode switching wires Loop 2 into Loop 1 (roadmap)</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">→ &nbsp;Normal / Cautious / Defensive based on market regime</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Principle -->
-  <div style="border-left:3px solid var(--green);padding:1.25rem 1.75rem;background:var(--cream-dark);border-radius:0 8px 8px 0;">
-    <p style="font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-style:italic;margin-bottom:0.4rem;">"No model may both generate and authorize the same action."</p>
-    <p style="font-size:0.85rem;color:var(--ink-light);">dolphin3:8b proposes. Haiku gates on anonymised data. The verification agent confirms outcomes. No single model controls the full loop. This is the governing principle of every agentic decision Buddie makes.</p>
-  </div>
-</section>
-
-<!-- VitaNest -->
       <rect x="4" y="74" width="64" height="32" fill="#2D6A4F" stroke="none"/>
       <text x="36" y="94" font-size="9.5" fill="#fff" text-anchor="middle" font-weight="500">VitaNest</text>
-
-      <!-- REST API -->
       <rect x="4" y="118" width="64" height="32" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="36" y="138" font-size="9.5" fill="#1A1A18" text-anchor="middle" font-weight="500">REST API</text>
 
-      <!-- Arrow from inputs to governor -->
-      <line x1="68" y1="90" x2="130" y2="90" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#arr)"/>
-      <!-- Bidirectional VitaNest -->
       <line x1="68" y1="85" x2="130" y2="85" stroke="#2D6A4F" stroke-width="1.5" marker-end="url(#arr-green)"/>
       <line x1="130" y1="95" x2="68" y2="95" stroke="#2D6A4F" stroke-width="1.5" marker-end="url(#arr-green)"/>
       <text x="96" y="79" font-size="7.5" fill="#2D6A4F" text-anchor="middle">bidirectional</text>
 
-      <!-- ── GOVERNOR BOX ── -->
+      <!-- governor -->
       <rect x="134" y="30" width="120" height="120" fill="#1A1A18" stroke="none"/>
-      <text x="194" y="52" font-size="9" fill="rgba(245,242,235,0.5)" text-anchor="middle" letter-spacing="1.5" font-family="DM Mono, monospace">GOVERNOR</text>
+      <text x="194" y="52" font-size="9" fill="rgba(245,242,235,0.5)" text-anchor="middle" letter-spacing="1.5">GOVERNOR</text>
       <text x="194" y="70" font-size="9.5" fill="#F5F2EB" text-anchor="middle">① Understand</text>
       <text x="194" y="86" font-size="9.5" fill="#F5F2EB" text-anchor="middle">② Audit freshness</text>
       <text x="194" y="102" font-size="9.5" fill="#F5F2EB" text-anchor="middle">③ Refine context</text>
       <text x="194" y="118" font-size="9.5" fill="#F5F2EB" text-anchor="middle">④ Route to tier</text>
       <text x="194" y="134" font-size="9.5" fill="#F5F2EB" text-anchor="middle">⑤ Log everything</text>
 
-      <!-- Arrow governor to tiers -->
       <line x1="254" y1="90" x2="310" y2="90" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#arr)"/>
 
-      <!-- ── INTELLIGENCE TIERS ── -->
-      <text x="430" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">INTELLIGENCE TIERS</text>
-
-      <!-- T1 Polars -->
+      <!-- tiers -->
+      <text x="370" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">MODEL TIERS · MAY DESIGN</text>
       <rect x="314" y="30" width="112" height="28" fill="#D8F3DC" stroke="#2D6A4F" stroke-width="1"/>
       <text x="326" y="46" font-size="9" fill="#2D6A4F" font-weight="500">T1 · Polars</text>
-      <text x="420" y="46" font-size="8" fill="#2D6A4F" text-anchor="end">£0.00 · instant</text>
-
-      <!-- T2 Gemini -->
+      <text x="420" y="46" font-size="8" fill="#2D6A4F" text-anchor="end">local</text>
       <rect x="314" y="64" width="112" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="326" y="80" font-size="9" fill="#3D3D38" font-weight="500">T2 · Gemini Flash</text>
-      <text x="420" y="80" font-size="8" fill="#52B788" text-anchor="end">free</text>
-
-      <!-- T3 Llama -->
+      <text x="420" y="80" font-size="8" fill="#6B6B64" text-anchor="end">cloud</text>
       <rect x="314" y="98" width="112" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="326" y="114" font-size="9" fill="#3D3D38" font-weight="500">T3 · Llama 3.3 70B</text>
-      <text x="420" y="114" font-size="8" fill="#52B788" text-anchor="end">free</text>
-
-      <!-- T4 Haiku -->
+      <text x="326" y="114" font-size="9" fill="#3D3D38" font-weight="500">T3 · Llama 3.3</text>
+      <text x="420" y="114" font-size="8" fill="#6B6B64" text-anchor="end">cloud</text>
       <rect x="314" y="132" width="112" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="326" y="148" font-size="9" fill="#3D3D38" font-weight="500">T4 · Claude Haiku</text>
-      <text x="420" y="148" font-size="8" fill="#B5451B" text-anchor="end">~£0.01</text>
-
-      <!-- T5 Offline -->
+      <text x="420" y="148" font-size="8" fill="#B5451B" text-anchor="end">cloud</text>
       <rect x="314" y="166" width="112" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="326" y="182" font-size="9" fill="#3D3D38" font-weight="500">Offline · Dolphin 3</text>
-      <text x="420" y="182" font-size="8" fill="#52B788" text-anchor="end">local only</text>
-
-      <!-- T6 Council -->
+      <text x="420" y="182" font-size="8" fill="#2D6A4F" text-anchor="end">local</text>
       <rect x="314" y="200" width="112" height="28" fill="#1A1A18" stroke="none"/>
       <text x="326" y="216" font-size="9" fill="#F5F2EB" font-weight="500">Ensemble Council</text>
-      <text x="420" y="216" font-size="8" fill="#52B788" text-anchor="end">~£0.001</text>
+      <text x="420" y="216" font-size="8" fill="#F5F2EB" text-anchor="end">cloud</text>
 
-      <!-- Arrow tiers to output -->
       <line x1="426" y1="120" x2="480" y2="120" stroke="#6B6B64" stroke-width="1.2" marker-end="url(#arr)"/>
 
-      <!-- ── AGENTS COLUMN ── -->
-      <text x="194" y="178" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">DAILY AGENTS</text>
-
+      <!-- scheduled agents -->
+      <text x="194" y="178" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">SCHEDULED AGENTS</text>
       <rect x="134" y="186" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="201" font-size="8.5" fill="#3D3D38" text-anchor="middle">T212Agent · finance</text>
-
+      <text x="194" y="201" font-size="8.5" fill="#3D3D38" text-anchor="middle">Broker · API or CSV</text>
       <rect x="134" y="212" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="227" font-size="8.5" fill="#3D3D38" text-anchor="middle">WhoopAgent · health</text>
-
+      <text x="194" y="227" font-size="8.5" fill="#3D3D38" text-anchor="middle">Garmin · health</text>
       <rect x="134" y="238" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="253" font-size="8.5" fill="#3D3D38" text-anchor="middle">MyenergiAgent · energy</text>
-
+      <text x="194" y="253" font-size="8.5" fill="#3D3D38" text-anchor="middle">Myenergi + Solis · energy</text>
       <rect x="134" y="264" width="120" height="22" fill="#2D6A4F" stroke="none"/>
-      <text x="194" y="279" font-size="8.5" fill="#fff" text-anchor="middle">BuddieSynthesis × 3</text>
-
+      <text x="194" y="279" font-size="8.5" fill="#fff" text-anchor="middle">BuddieSynthesis · daily</text>
       <rect x="134" y="290" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="305" font-size="8.5" fill="#3D3D38" text-anchor="middle">SystemAgent · health checks</text>
-
+      <text x="194" y="305" font-size="8.5" fill="#3D3D38" text-anchor="middle">Prices · valuation</text>
       <rect x="134" y="316" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="331" font-size="8.5" fill="#3D3D38" text-anchor="middle">WebAgent · RSS feeds</text>
-
+      <text x="194" y="331" font-size="8.5" fill="#3D3D38" text-anchor="middle">Web Scout · daily</text>
       <rect x="134" y="342" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="194" y="357" font-size="8.5" fill="#3D3D38" text-anchor="middle">EmailAgent · brief</text>
+      <text x="194" y="357" font-size="8.5" fill="#3D3D38" text-anchor="middle">Income Scout · monthly</text>
+      <rect x="134" y="368" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
+      <text x="194" y="383" font-size="8.5" fill="#3D3D38" text-anchor="middle">Coding agent · issue → PR</text>
 
-      <rect x="134" y="368" width="120" height="22" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1.5" stroke-dasharray="3,2"/>
-      <text x="194" y="383" font-size="8.5" fill="#9B9B92" text-anchor="middle">CalendarAgent · paused</text>
-
-      <!-- Agent arrow to staging -->
       <line x1="254" y1="285" x2="310" y2="285" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <text x="282" y="278" font-size="7.5" fill="#9B9B92" text-anchor="middle">staging/</text>
-
-      <!-- staging box -->
       <rect x="314" y="264" width="112" height="44" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="370" y="281" font-size="8.5" fill="#3D3D38" text-anchor="middle" font-weight="500">staging/structured/</text>
-      <text x="370" y="297" font-size="8" fill="#6B6B64" text-anchor="middle">t212 · whoop · energy</text>
+      <text x="370" y="297" font-size="8" fill="#6B6B64" text-anchor="middle">finance · health · energy</text>
 
-      <!-- ── MEMORY + OUTPUT COLUMN ── -->
-      <text x="560" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">MEMORY + OUTPUT</text>
-
-      <!-- PostgreSQL -->
+      <!-- memory + output -->
+      <text x="560" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">MEMORY + OUTPUT</text>
       <rect x="484" y="30" width="152" height="40" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
       <text x="560" y="48" font-size="9" fill="#3D3D38" text-anchor="middle" font-weight="500">PostgreSQL</text>
-      <text x="560" y="62" font-size="8" fill="#6B6B64" text-anchor="middle">buddie_observations · ghost_actions</text>
-
-      <!-- Memory files -->
+      <text x="560" y="62" font-size="8" fill="#6B6B64" text-anchor="middle">local · holdings · health · energy</text>
       <rect x="484" y="76" width="152" height="40" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="560" y="93" font-size="9" fill="#3D3D38" text-anchor="middle" font-weight="500">Memory</text>
-      <text x="560" y="107" font-size="8" fill="#6B6B64" text-anchor="middle">gaps · decisions · observations</text>
-
-      <!-- Morning brief -->
+      <text x="560" y="93" font-size="9" fill="#3D3D38" text-anchor="middle" font-weight="500">Observations</text>
+      <text x="560" y="107" font-size="8" fill="#6B6B64" text-anchor="middle">ghost mode · nothing acts on them</text>
       <rect x="484" y="122" width="152" height="28" fill="#2D6A4F" stroke="none"/>
-      <text x="560" y="140" font-size="9" fill="#fff" text-anchor="middle" font-weight="500">Morning Brief · 09:45</text>
-
-      <!-- Self-extension -->
+      <text x="560" y="140" font-size="9" fill="#fff" text-anchor="middle" font-weight="500">Daily brief · monthly report</text>
       <rect x="484" y="156" width="152" height="40" fill="#1A1A18" stroke="none"/>
-      <text x="560" y="173" font-size="9" fill="#F5F2EB" text-anchor="middle" font-weight="500">/prompt → /code pipeline</text>
-      <text x="560" y="187" font-size="8" fill="rgba(245,242,235,0.6)" text-anchor="middle">prompt · gen · review · skills/</text>
+      <text x="560" y="173" font-size="9" fill="#F5F2EB" text-anchor="middle" font-weight="500">Mission runner</text>
+      <text x="560" y="187" font-size="8" fill="rgba(245,242,235,0.6)" text-anchor="middle">written mission file → agent run</text>
 
-      <!-- Arrow memory to VitaNest output -->
       <line x1="636" y1="140" x2="700" y2="140" stroke="#2D6A4F" stroke-width="1.5" marker-end="url(#arr-green)"/>
 
-      <!-- ── VITANEST OUTPUT ── -->
-      <text x="762" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">VITANEST</text>
-
+      <!-- vitanest -->
+      <text x="762" y="22" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">VITANEST</text>
       <rect x="704" y="30" width="116" height="220" fill="#2D6A4F" stroke="none" rx="2"/>
-      <text x="762" y="52" font-size="9" fill="rgba(255,255,255,0.6)" text-anchor="middle" letter-spacing="1" font-family="DM Mono, monospace">ANDROID APP</text>
-      <text x="762" y="72" font-size="9" fill="#fff" text-anchor="middle">🏠 Home · turbine</text>
-      <text x="762" y="92" font-size="9" fill="#fff" text-anchor="middle">📊 Finance · pies</text>
-      <text x="762" y="112" font-size="9" fill="#fff" text-anchor="middle">⚡ Energy · solar</text>
-      <text x="762" y="132" font-size="9" fill="#fff" text-anchor="middle">❤️ Health · charts</text>
-      <text x="762" y="152" font-size="9" fill="#fff" text-anchor="middle">🌱 Growth · 7d/30d/90d</text>
-      <text x="762" y="172" font-size="9" fill="#fff" text-anchor="middle">🐾 Ask · Buddie</text>
+      <text x="762" y="52" font-size="9" fill="rgba(255,255,255,0.6)" text-anchor="middle" letter-spacing="1">ANDROID APP</text>
+      <text x="762" y="72" font-size="9" fill="#fff" text-anchor="middle">Home</text>
+      <text x="762" y="92" font-size="9" fill="#fff" text-anchor="middle">Finance</text>
+      <text x="762" y="112" font-size="9" fill="#fff" text-anchor="middle">Energy</text>
+      <text x="762" y="132" font-size="9" fill="#fff" text-anchor="middle">Health</text>
+      <text x="762" y="152" font-size="9" fill="#fff" text-anchor="middle">Growth · 7d/30d/90d</text>
+      <text x="762" y="172" font-size="9" fill="#fff" text-anchor="middle">Ask · Buddie</text>
       <line x1="720" y1="183" x2="804" y2="183" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
       <text x="762" y="198" font-size="8" fill="rgba(255,255,255,0.7)" text-anchor="middle">Kindle-inspired UI</text>
       <text x="762" y="212" font-size="8" fill="rgba(255,255,255,0.7)" text-anchor="middle">Reads API · Writes ratings</text>
       <text x="762" y="228" font-size="8" fill="rgba(255,255,255,0.7)" text-anchor="middle">Zero business logic</text>
 
-      <!-- Bidirectional VitaNest arrows (right side) -->
       <line x1="700" y1="108" x2="640" y2="108" stroke="#2D6A4F" stroke-width="1.5" marker-end="url(#arr-green)"/>
       <text x="668" y="103" font-size="7.5" fill="#2D6A4F" text-anchor="middle">ratings back</text>
 
-      <!-- ── BOTTOM ROW - DATA SOURCES ── -->
-      <text x="430" y="360" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle" font-family="DM Mono, monospace">DATA SOURCES</text>
-
+      <!-- data sources -->
+      <text x="413" y="360" font-size="9" fill="#9B9B92" letter-spacing="1.5" text-anchor="middle">DATA SOURCES</text>
       <rect x="134" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="178" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Trading 212 API</text>
-
+      <text x="178" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Broker API / CSV</text>
       <rect x="228" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="272" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Whoop API</text>
-
+      <text x="272" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Garmin</text>
       <rect x="322" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="366" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Myenergi API</text>
-
+      <text x="366" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Health Connect</text>
       <rect x="416" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="460" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Yahoo Finance</text>
-
+      <text x="460" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Price feed</text>
       <rect x="510" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="554" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">BBC / Guardian RSS</text>
-
+      <text x="554" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Bank CSV files</text>
       <rect x="604" y="408" width="88" height="28" fill="#EAE6DC" stroke="#1A1A1820" stroke-width="1"/>
-      <text x="648" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Solis Solar API</text>
+      <text x="648" y="426" font-size="8.5" fill="#3D3D38" text-anchor="middle">Myenergi · Solis</text>
 
-      <!-- Data source arrows up to agents -->
       <line x1="178" y1="408" x2="178" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <line x1="272" y1="408" x2="272" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <line x1="366" y1="408" x2="366" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <line x1="460" y1="408" x2="460" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <line x1="554" y1="408" x2="554" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
       <line x1="648" y1="408" x2="648" y2="395" stroke="#6B6B64" stroke-width="1" marker-end="url(#arr)"/>
-
-      <!-- Horizontal data line -->
       <line x1="134" y1="390" x2="692" y2="390" stroke="#6B6B64" stroke-width="0.8"/>
 
-      <!-- Privacy note -->
+      <!-- privacy note -->
       <rect x="134" y="450" width="558" height="24" fill="none" stroke="#2D6A4F" stroke-width="0.8" stroke-dasharray="4,2"/>
-      <text x="413" y="466" font-size="8.5" fill="#2D6A4F" text-anchor="middle">🔒  All data processed locally · Tickers anonymised before cloud LLM calls · Health data local-only</text>
+      <text x="413" y="466" font-size="8.5" fill="#2D6A4F" text-anchor="middle">All data stored locally · Health synthesis on a local model · Finance and energy synthesis use a cloud model</text>
 
-      <!-- Title -->
-      <text x="430" y="500" font-size="8" fill="#9B9B92" text-anchor="middle" font-family="DM Mono, monospace">BUDDIE.LOCAL — AGENTIC FLOW · buddie-local.netlify.app</text>
+      <text x="430" y="500" font-size="8" fill="#9B9B92" text-anchor="middle">BUDDIE.LOCAL — SYSTEM FLOW · REVISED NOV 2026</text>
     </svg>
   </div>
 
-  <h3>The five routing steps on every query</h3>
+  <h3>Two ways data arrives</h3>
+  <p>The finance pipeline reads from <strong>a live broker API or from files a person drops in</strong>. Until autumn 2026 holdings came from Trading 212 over its API. That account is being phased out; holdings now come from Interactive Investor, which has no API, as a monthly CSV export. Bank statements arrive the same way. Prices and valuation run as their own daily jobs, so the portfolio value no longer depends on any broker being reachable.</p>
+  <p>The health pipeline changed too. Whoop has been replaced by a daily Garmin job as the primary source, with Android Health Connect records arriving through a small companion app as a second source. Both feed the same health views, so the rest of the system did not need to know the device changed.</p>
+
+  <h3>Model tiers (May design, not re-verified)</h3>
   <div class="tier-stack">
     <div class="tier-row tier-header">
-      <div>Tier</div><div>Engine</div><div>Use case</div><div>Cost</div>
+      <div>Tier</div><div>Engine</div><div>Use case</div><div>Where</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">T1</div>
       <div class="tier-model">Polars</div>
-      <div class="tier-trigger">Deterministic local data — portfolio, dividends, income. Instant.</div>
-      <div class="tier-cost cost-free">£0.00</div>
+      <div class="tier-trigger">Deterministic local data — portfolio, dividends, income</div>
+      <div class="tier-cost cost-free">Local</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">T2</div>
       <div class="tier-model">Gemini 2.5 Flash</div>
-      <div class="tier-trigger">General reasoning, context-aware analysis</div>
-      <div class="tier-cost cost-free">Free / 250/day</div>
+      <div class="tier-trigger">General reasoning on live questions</div>
+      <div class="tier-cost cost-paid">Cloud</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">T3</div>
       <div class="tier-model">Llama 3.3 70B</div>
-      <div class="tier-trigger">Gemini rate-limited fallback — OpenRouter free tier</div>
-      <div class="tier-cost cost-free">Free</div>
+      <div class="tier-trigger">Fallback when T2 is rate-limited</div>
+      <div class="tier-cost cost-paid">Cloud</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">T4</div>
       <div class="tier-model">Claude Haiku</div>
-      <div class="tier-trigger">Nightly synthesis agents — last resort for live queries</div>
-      <div class="tier-cost cost-paid">~£0.01/run</div>
+      <div class="tier-trigger">Daily synthesis agents</div>
+      <div class="tier-cost cost-paid">Cloud</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">Offline</div>
       <div class="tier-model">Dolphin 3 (local)</div>
-      <div class="tier-trigger">Sensitive queries — fully local, zero API, no data leaving device</div>
-      <div class="tier-cost cost-free">£0.00</div>
+      <div class="tier-trigger">Offline mode — runs on the machine's CPU, no API call</div>
+      <div class="tier-cost cost-free">Local</div>
     </div>
     <div class="tier-row">
       <div class="tier-num">Council</div>
       <div class="tier-model">Ensemble (multi-model)</div>
-      <div class="tier-trigger">Complex financial decisions — multiple models deliberate independently</div>
-      <div class="tier-cost cost-paid">~£0.001</div>
+      <div class="tier-trigger">Several models deliberate independently on a hard question</div>
+      <div class="tier-cost cost-paid">Cloud</div>
     </div>
   </div>
 </section>
 
 <!-- Agents -->
 <section class="section" id="agents">
-  <div class="section-number">§ 2 — Named Agents</div>
-  <h2>Eight agents. Each with a single responsibility.</h2>
-  <p>Every agent runs on a systemd timer, writes to a staging fragment, and reports to the agent_runs table. Each fails independently — one agent failing does not block the others.</p>
+  <div class="section-number">§ 2 — Agents</div>
+  <h2>Scheduled agents. Each with one job.</h2>
+  <p>Every agent runs on a systemd timer and reports to an agent_runs table. Each fails independently. One caveat belongs here and not in the small print: "success" in that table currently means the process exited cleanly, not that it did useful work.</p>
 
   <div class="domain-grid">
     <div class="domain-card">
       <div class="domain-icon">💰</div>
-      <div class="domain-name">T212Agent</div>
-      <div class="domain-desc">Daily pull from Trading 212 API. Positions, orders, dividends, pie allocations. Writes to staging/structured/t212/. Source of truth for all finance data.</div>
+      <div class="domain-name">Broker import</div>
+      <div class="domain-desc">Holdings, orders and transactions. Reads a live API where the broker has one and a monthly CSV export where it does not. Trading 212 (API) is being phased out; Interactive Investor (CSV) replaces it.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">🏦</div>
+      <div class="domain-name">Bank import</div>
+      <div class="domain-desc">Bank statement CSV import with category mapping. Rows it cannot categorise go to a suspense list for a person to clear.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">📈</div>
+      <div class="domain-name">Prices · valuation</div>
+      <div class="domain-desc">Independent daily price fetch, then portfolio valuation. Added so valuation survives the loss of a broker API.</div>
+    </div>
+    <div class="domain-card">
+      <div class="domain-icon">🧾</div>
+      <div class="domain-name">Holdings income report</div>
+      <div class="domain-desc">Monthly holdings and income report, delivered by email. In use since late October 2026.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">❤️</div>
-      <div class="domain-name">WhoopAgent</div>
-      <div class="domain-desc">Daily Whoop API pull. Recovery score, HRV, RHR, SpO2, sleep stages, strain, workout. Inserts into whoop_cycles DB table. Backfill-capable.</div>
+      <div class="domain-name">Garmin · Health Connect</div>
+      <div class="domain-desc">Daily Garmin pull, now the primary health source. Health Connect records arrive from the phone as a second source. Replaced Whoop.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">⚡</div>
-      <div class="domain-name">MyenergiAgent</div>
-      <div class="domain-desc">Daily Myenergi pull. Zappi EV charging, Eddi hot water diverter, solar generation via Solis API. Self-sufficiency calculation. Energy savings tracking.</div>
+      <div class="domain-name">Myenergi · Solis</div>
+      <div class="domain-desc">Daily energy data — EV charger, hot water diverter, solar generation — stored in PostgreSQL.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">🧠</div>
-      <div class="domain-name">BuddieSynthesis × 3</div>
-      <div class="domain-desc">Three parallel agents — Finance, Health, Energy. Each receives shaped anonymised data, writes structured observations with confidence scores to ghost_actions. Daily at 09:00.</div>
+      <div class="domain-name">BuddieSynthesis</div>
+      <div class="domain-desc">Finance, health and energy synthesis plus a cross-domain pass, run daily. Writes observations with confidence scores. Most are stored hidden (see Limitations).</div>
     </div>
     <div class="domain-card">
-      <div class="domain-icon">🔧</div>
-      <div class="domain-name">SystemAgent</div>
-      <div class="domain-desc">Health checks on all services, DB connectivity, data freshness validation, OpenRouter key validity. Alerts via Telegram if stale data or service failure detected.</div>
+      <div class="domain-icon">🗂️</div>
+      <div class="domain-name">Mission runner</div>
+      <div class="domain-desc">Runs an agent from a written mission file instead of a hard-coded script. The two scouts below run this way.</div>
     </div>
     <div class="domain-card">
-      <div class="domain-icon">📰</div>
-      <div class="domain-name">WebAgent</div>
-      <div class="domain-desc">BBC Business and Guardian Business RSS feeds. Curated, not scraped. Surfaces in morning brief with category tags: Business, Technology, Political.</div>
+      <div class="domain-icon">🔭</div>
+      <div class="domain-name">Web Scout</div>
+      <div class="domain-desc">Daily scan of chosen web topics. Stores what it finds for review.</div>
     </div>
     <div class="domain-card">
-      <div class="domain-icon">📧</div>
-      <div class="domain-name">EmailAgent</div>
-      <div class="domain-desc">Email brief with priority filtering. BT26 rules applied. Surfaces in morning brief digest.</div>
+      <div class="domain-icon">🔎</div>
+      <div class="domain-name">Income Scout</div>
+      <div class="domain-desc">Monthly search for income ETF candidates. Scheduled; its first run on the monthly timer is due in December 2026.</div>
     </div>
     <div class="domain-card">
-      <div class="domain-icon">📅</div>
-      <div class="domain-name">CalendarAgent</div>
-      <div class="domain-desc">Google Calendar integration. Currently paused — OAuth token requires periodic browser reauthorisation. Non-fatal: pipeline continues without it. Roadmap: service account migration.</div>
+      <div class="domain-icon">🛠️</div>
+      <div class="domain-name">Coding agent</div>
+      <div class="domain-desc">Takes a GitHub issue, writes the change, runs the tests, opens a pull request. A person merges. Described below.</div>
     </div>
   </div>
 
-  <h3>Self-extension — the /prompt → /code pipeline</h3>
-  <p>When the system cannot answer a query, it logs the gap to <code>memory/gaps.json</code>. After repeated gaps on the same topic, Buddie proposes a new capability. The pipeline:</p>
+  <h3>From issue to pull request — the coding agent</h3>
+  <p>The May paper described a /prompt → /code self-extension pipeline. This flow supersedes it. The agent never decides what to build and never merges its own work.</p>
   <div class="pipeline">
     <div class="pipeline-step">
-      <div class="pipeline-time">/prompt</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Natural language specification</strong> — describe what the new skill should do, constraints, output format</div>
+      <div class="pipeline-time">issue</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>A GitHub issue in a fixed shape</strong> — goal, files, what must not change, and what "done" means</div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">/code</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Code generation</strong> — Gemini generates the implementation against VitaClaw schemas and architecture rules</div>
+      <div class="pipeline-time">label</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>A person marks it ready</strong> — nothing starts without that, and only one issue is in flight at a time</div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">sandbox</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Safe execution</strong> — runs in isolated context, output reviewed before any promotion</div>
+      <div class="pipeline-time">write</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>The agent writes the change</strong> — within an allowed set of paths, under a monthly spend cap</div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">review</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Human approval required</strong> — generated code is never automatically trusted or promoted</div>
+      <div class="pipeline-time">test</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Tests run in a sandbox with no network access</strong></div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">skills/</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Permanent capability</strong> — promoted to skills/ library, available to all subsequent queries</div>
+      <div class="pipeline-time">PR</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Pull request opened</strong> — a person reviews and merges. Never the agent.</div>
     </div>
   </div>
-  <p>This has produced functional extensions including energy data fetchers, dividend calendar enrichment, portfolio lens classification, and income stress simulation.</p>
+  <p>State on 15 Nov 2026: 13 runs in the previous 7 days, 12 completed, and two clean pull requests merged so far. That is a small sample, not a track record.</p>
 </section>
 
 <!-- Synthesis -->
 <section class="section" id="synthesis">
   <div class="section-number">§ 3 — Daily Synthesis</div>
-  <h2>Three agents. Every morning. Observations, not summaries.</h2>
-  <p>At 09:00 daily, three BuddieSynthesis agents run independently. Each receives shaped, anonymised data. Each writes structured observations to ghost_actions. All observations are logged. Synthesis observations remain in ghost mode during the 30-day calibration run. Trade decisions are live — Buddie selects dividend holdings autonomously each morning until the monthly income target is met.</p>
+  <h2>Observations every morning. Most of them never shown.</h2>
+  <p>Synthesis agents for finance, health and energy run every day, followed by a cross-domain pass. Each reads shaped data and writes structured observations with a confidence score. Nothing acts on them: the system runs in ghost mode with autonomous writes switched off in configuration.</p>
 
   <div class="pipeline">
     <div class="pipeline-step">
-      <div class="pipeline-time">08:30</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Data refresh</strong> — positions, Whoop, energy pulled live from broker and device APIs</div>
+      <div class="pipeline-time">07:30</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Prices</strong> — independent daily price fetch</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">07:40</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Valuation</strong> — portfolio value from stored holdings and those prices</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="pipeline-time">08:20</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Web Scout</strong> — daily topic scan</div>
     </div>
     <div class="pipeline-step">
       <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>BuddieSynthesis · Finance</strong> — portfolio concentration, income pacing, ex-div calendar, DCA effectiveness</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Synthesis</strong> — finance, health, energy, then cross-domain</div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>BuddieSynthesis · Health</strong> — HRV trend, sleep debt accumulation, SpO2 pattern flags, recovery baseline vs current</div>
+      <div class="pipeline-time">Daily</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Brief</strong> — compiled from the day's data and observations</div>
     </div>
     <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>BuddieSynthesis · Energy</strong> — solar yield vs 7d baseline, EV charging cost vs solar offset, grid dependency trend</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">09:45</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Morning brief compiled</strong> — synthesised across all three domains, pushed to VitaNest and Telegram</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">Future</div>
-      <div class="pipeline-desc"><span class="dot dot-soon"></span><strong>Cross-domain synthesiser</strong> — Finance × Health × Energy correlation engine. After Day 14.</div>
+      <div class="pipeline-time">Monthly</div>
+      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Holdings income report</strong> — by email</div>
     </div>
   </div>
 
-  <h3>Observation examples</h3>
-  <p>The following are illustrative outputs from the synthesis pipeline, shown for demonstration purposes only.</p>
+  <h3>Which model sees what</h3>
+  <p>The scheduled health synthesis runs on a local model on the same machine, and the health reports are computed locally. Other features that read health data, such as the council and proactive alerts, have not yet been audited for which model they use. Finance and energy synthesis are sent to a cloud model (Claude Haiku, through OpenRouter), with a hard cost cap per run. Until November 2026 health synthesis used the cloud model too, which contradicted the rule this system was built on. That has been corrected.</p>
+  <p>The May paper said tickers were anonymised before any cloud call. An anonymisation step exists, but it has not been verified end to end, so that claim is withdrawn until it is.</p>
 
-  <div class="obs-card">
-    <div class="obs-header">
-      <span class="obs-domain">Finance · capital_allocation</span>
-      <span class="obs-confidence">93% confidence · synthesis ghost mode</span>
+  <h3>What the numbers say about the feedback loop</h3>
+  <p>The May paper presented ratings as a working calibration loop. Measured on 15 Nov 2026, it is not one.</p>
+  <div class="metric-row">
+    <div class="metric-cell">
+      <div class="metric-val">736</div>
+      <div class="metric-lbl">Observations written in 30 days. 555 stored hidden, 156 visible and unrated.</div>
     </div>
-    <div class="obs-body">
-      <strong>Cash position represents 0.39% of total portfolio.</strong> Daily P&L swing is 16.6× the cash buffer. A single down day could consume the entire cash reserve, limiting rebalance and opportunity capacity.
+    <div class="metric-cell">
+      <div class="metric-val">301 / 0 / 0</div>
+      <div class="metric-lbl">Rated useful / wrong / important in 90 days. 1,835 unrated.</div>
     </div>
-    <div class="obs-footer">
-      <span>model: claude-haiku-4.5</span><span>type: observation</span><span>not acted on</span>
+    <div class="metric-cell">
+      <div class="metric-val">129</div>
+      <div class="metric-lbl">Cross-domain observations in 30 days. The May paper listed this agent as future work; it runs daily.</div>
     </div>
   </div>
-
-  <div class="obs-card">
-    <div class="obs-header">
-      <span class="obs-domain">Health · sleep_debt</span>
-      <span class="obs-confidence">91% confidence · synthesis ghost mode</span>
-    </div>
-    <div class="obs-body">
-      <strong>Sleep debt has accumulated significantly by mid-May.</strong> This directly suppresses HRV and destabilises recovery scores. Worst recovery days consistently occur after nights adding to cumulative debt. February baseline confirms capability when sleep debt stays controlled.
-    </div>
-    <div class="obs-footer">
-      <span>model: claude-haiku-4.5</span><span>type: observation</span><span>not acted on</span>
-    </div>
-  </div>
+  <p>A rating history with no "wrong" in it carries no information. The honest reading is that the system produces far more observations than one person will read, and the next step is fewer of them, not a better score for each.</p>
 
   <h3>Trust architecture</h3>
   <div class="principles">
     <div class="principle">
       <span class="principle-num">01</span>
-      <div class="principle-text"><strong>No model may both generate and authorize the same action.</strong> Observations write to escrow. A separate rule-based verifier stamps them publishable or not.</div>
+      <div class="principle-text"><strong>No model may both generate and authorize the same action.</strong> This is a design rule. Today it holds mostly because nothing acts on observations at all; the separate verification step is not active.</div>
     </div>
     <div class="principle">
       <span class="principle-num">02</span>
-      <div class="principle-text"><strong>Observations are not recommendations.</strong> "What happened?" is automatic. "What should you do?" requires explicit human approval. Financial actions require the strictest gate.</div>
+      <div class="principle-text"><strong>Observations are not recommendations.</strong> "What happened?" is automatic. "What should you do?" stays with the person. No synthesis output triggers an action.</div>
     </div>
     <div class="principle">
       <span class="principle-num">03</span>
-      <div class="principle-text"><strong>Privacy is architectural, not a setting.</strong> Tickers anonymised to semantic codes before any cloud call. Health data routes to local-only models. Enforced by the architecture — not a policy statement.</div>
+      <div class="principle-text"><strong>Storage is local. Model use is stated, not implied.</strong> Health synthesis runs on a local model. Finance and energy synthesis use a cloud model. The May claim that this was "enforced by architecture" was wrong: it is a configuration setting, and until November 2026 it pointed health synthesis at a cloud model.</div>
     </div>
     <div class="principle">
       <span class="principle-num">04</span>
-      <div class="principle-text"><strong>Confidence is earned from track record.</strong> 30-day ghost run in progress. User ratings on every observation feed a calibration loop. Autonomous actions only unlock when accuracy record earns them.</div>
+      <div class="principle-text"><strong>Confidence has not been earned yet.</strong> Confidence scores are uncalibrated, and the ratings that were meant to calibrate them do not. Nothing unlocks on them.</div>
     </div>
   </div>
 </section>
 
 <!-- Agentic Trade Engine -->
 <section class="section" id="agentic-trade">
-  <div class="section-number">§ 3.5 — Agentic Trade Engine</div>
-  <h2>Buddie selects. You confirm. Trust earns automation.</h2>
+  <div class="section-number">§ 3.5 — Paper Trading</div>
+  <h2>Paper trading. No real orders.</h2>
 
-  <p>Every morning, Buddie runs a fully autonomous dividend selection pipeline. It evaluates every holding in the portfolio against constitution rules — yield thresholds, covered call concentration limits, budget constraints, payment history — and selects the optimal trade to close the monthly income gap. Nobody asks it to. It just runs.</p>
+  <p>A paper-trading agent runs every morning against a fixed paper budget. It has never placed a real order. The May paper described real execution as ready and waiting on trust; with the move to a broker that has no trading API, automated execution through the broker is no longer possible, and this paper drops the claim.</p>
 
-  <p>The Trading 212 API is integrated and capable of execution. Automation is gated on trust, not capability. The governance model is explicit: <strong>no model may both generate and authorise the same action.</strong> Buddie proposes. The human confirms via a single tap in VitaNest. Every confirmation or rejection feeds the confidence calibration loop.</p>
-
-  <div class="pipeline">
-    <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Candidate evaluation</strong> — all holdings scored against constitution: yield, concentration, budget, payment history</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Dolphin 3 (local)</strong> — offline model selects optimal candidate from passed set. No data leaves device.</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Haiku risk gate</strong> — cloud model applies yield trap, sustainability, and concentration checks. Blocks high-risk selections.</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">09:00</div>
-      <div class="pipeline-desc"><span class="dot dot-live"></span><strong>Trade written to VitaNest</strong> — ticker, shares, capital, projected income, ex-div window. Human confirms or skips.</div>
-    </div>
-    <div class="pipeline-step">
-      <div class="pipeline-time">Future</div>
-      <div class="pipeline-desc"><span class="dot"></span><strong>Autonomous execution</strong> — T212 API ready. Unlocks when 30-day confidence record earns it.</div>
-    </div>
-  </div>
-
-  <div class="trust-grid">
-    <div class="trust-item">
-      <div class="trust-number">01</div>
-      <div class="trust-text"><strong>Constitution-bound.</strong> Every decision checked against a YAML rulebook — yield limits, concentration caps, budget constraints. Rules are data, not code.</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-number">02</div>
-      <div class="trust-text"><strong>Two-model deliberation.</strong> Dolphin selects offline. Haiku challenges. Disagreement is logged. Provenance tracked on every trade.</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-number">03</div>
-      <div class="trust-text"><strong>Human as verifier.</strong> Bought or Skipped — one tap. Not a workaround for incomplete automation. The governance gate by design.</div>
-    </div>
-    <div class="trust-item">
-      <div class="trust-number">04</div>
-      <div class="trust-text"><strong>Execution ready.</strong> T212 API integrated. Automation withheld until the confidence record earns it — not because the capability is absent.</div>
-    </div>
+  <div class="principles">
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Runs daily.</strong> Eight paper buys were opened on 1 Nov 2026 and two paper growth trades on 2 Nov.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Paper only.</strong> Autonomous writes are off in configuration. Nothing here touches a real account.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Outcomes recorded.</strong> Dividend outcomes exist for ten distinct paper trades, the most recent in September 2026.</div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Candidate universe needs re-basing.</strong> It was drawn from Trading 212 holdings and has to move to the new holdings source.</div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>One rule change unconfirmed.</strong> A decision in October 2026 to retire the highest-yield income rule has not been confirmed as applied in the code.</div></div>
   </div>
 </section>
 
 <!-- Agentic Loops -->
 <section class="section" id="agentic-loops">
-  <div class="section-number">§ 3.6 — Two Agentic Loops</div>
-  <h2>Two loops. Running every morning.<br><em>Neither waits to be asked.</em></h2>
-  <p>Buddie operates two autonomous loops daily. Both perceive, reason, act, verify, and learn within defined boundaries — the same design philosophy as production robo-advisors. The guardrails are not a limitation. They are the mandate.</p>
-  <p style="font-size:0.85rem;color:var(--ink-light);font-style:italic;margin-top:-0.5rem;">Validated by LLM council review (ChatGPT, Copilot, Perplexity) — revised framing June 2026.</p>
+  <div class="section-number">§ 3.6 — Two Loops</div>
+  <h2>Two loops. One verified, one not re-measured.</h2>
+  <p>The May paper described two autonomous loops with a detailed diagram. The diagram named components and counts that no longer match the system, so it has been removed. What can be said today:</p>
 
-  <!-- SVG diagram -->
-  <div style="margin:2.5rem 0;overflow-x:auto;">
-  <svg width="100%" viewBox="0 0 680 780" style="max-width:720px;display:block;margin:0 auto;" role="img">
-    <defs>
-      <marker id="arr-l" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#6B6B64" stroke-width="1.5" stroke-linecap="round"/>
-      </marker>
-      <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="#2D6A4F" stroke-width="1.5" stroke-linecap="round"/>
-      </marker>
-    </defs>
-
-    <!-- titles -->
-    <text x="170" y="22" text-anchor="middle" font-family="'DM Mono',monospace" font-size="10" fill="#6B6B64" letter-spacing="1">LOOP 1 — PAPER TRADE</text>
-    <text x="510" y="22" text-anchor="middle" font-family="'DM Mono',monospace" font-size="10" fill="#6B6B64" letter-spacing="1">LOOP 2 — MARKET CORRELATION</text>
-    <line x1="340" y1="10" x2="340" y2="720" stroke="#EAE6DC" stroke-width="1" stroke-dasharray="4 4"/>
-
-    <!-- LOOP 1 -->
-    <!-- PERCEIVE -->
-    <rect x="30" y="36" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="50" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">PERCEIVE  09:00</text>
-    <rect x="30" y="64" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="95" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">T212 agent</text>
-    <text x="95" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">67 live positions</text>
-    <rect x="180" y="64" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="245" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Finance shaper</text>
-    <text x="245" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">+ market context</text>
-    <line x1="170" y1="122" x2="170" y2="140" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- REASON -->
-    <rect x="30" y="140" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="154" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">REASON</text>
-    <rect x="30" y="168" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="95" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">dolphin3:8b</text>
-    <text x="95" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">selects candidate</text>
-    <rect x="180" y="168" width="130" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="245" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Haiku gate</text>
-    <text x="245" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">anonymised tickers</text>
-    <line x1="170" y1="226" x2="170" y2="244" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- ACT -->
-    <rect x="30" y="244" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="258" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#B5451B" letter-spacing="0.5">ACT — autonomous</text>
-    <rect x="30" y="272" width="280" height="48" rx="6" fill="white" stroke="#f5c4b0" stroke-width="1"/>
-    <text x="170" y="292" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">executes vs £300 paper budget</text>
-    <text x="170" y="308" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">you rate after — Bought / Skipped</text>
-    <line x1="170" y1="330" x2="170" y2="348" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- VERIFY -->
-    <rect x="30" y="348" width="280" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="170" y="362" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">VERIFY</text>
-    <rect x="30" y="376" width="280" height="56" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="170" y="398" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">verification agent</text>
-    <text x="170" y="414" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">matches dividends_history.json</text>
-    <text x="170" y="428" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">fills actual_income_gbp</text>
-    <line x1="170" y1="442" x2="170" y2="460" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- LEARN -->
-    <rect x="30" y="460" width="280" height="20" rx="3" fill="#D8F3DC"/>
-    <text x="170" y="474" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#2D6A4F" font-weight="500" letter-spacing="0.5">LEARN ✓ loop closes</text>
-    <rect x="30" y="488" width="280" height="56" rx="6" fill="#D8F3DC" stroke="#52B788" stroke-width="1"/>
-    <text x="170" y="510" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">buddie_ticker_weights</text>
-    <text x="170" y="526" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">reliability weight → next score</text>
-    <text x="170" y="540" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">+ counterfactual memory</text>
-    <path d="M30 516 Q10 516 10 318 Q10 196 30 196" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
-
-    <!-- LOOP 2 -->
-    <!-- PERCEIVE -->
-    <rect x="370" y="36" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="50" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">PERCEIVE  06:45</text>
-    <rect x="370" y="64" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="432" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">market_data</text>
-    <text x="432" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">9 indices, 24 ETFs</text>
-    <rect x="515" y="64" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="577" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">FX rates</text>
-    <text x="577" y="100" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">GBPUSD, GBPEUR</text>
-    <line x1="505" y1="122" x2="505" y2="140" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- REASON -->
-    <rect x="370" y="140" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="154" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">REASON</text>
-    <rect x="370" y="168" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="432" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">Pearson corr.</text>
-    <text x="432" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">weekly, FX-adjusted</text>
-    <rect x="515" y="168" width="125" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="577" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">market_context</text>
-    <text x="577" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">→ Haiku sees why</text>
-    <line x1="505" y1="226" x2="505" y2="244" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- SYNTHESISE -->
-    <rect x="370" y="244" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="258" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">SYNTHESISE  09:05</text>
-    <rect x="370" y="272" width="270" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="505" y="292" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">finance_synthesis (Haiku)</text>
-    <text x="505" y="308" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">market-aware observations</text>
-    <line x1="505" y1="330" x2="505" y2="348" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- PROJECT -->
-    <rect x="370" y="348" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="362" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#B5451B" letter-spacing="0.5">PROJECT  07:00</text>
-    <rect x="370" y="376" width="270" height="48" rx="6" fill="white" stroke="#f5c4b0" stroke-width="1"/>
-    <text x="505" y="398" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">projection_agent</text>
-    <text x="505" y="414" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">corr × index move → ETF P&amp;L</text>
-    <line x1="505" y1="434" x2="505" y2="452" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- VERIFY -->
-    <rect x="370" y="452" width="270" height="20" rx="3" fill="#EAE6DC"/>
-    <text x="505" y="466" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#6B6B64" letter-spacing="0.5">VERIFY  08:45</text>
-    <rect x="370" y="480" width="270" height="48" rx="6" fill="white" stroke="#D8F3DC" stroke-width="1"/>
-    <text x="505" y="500" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">projection_validator</text>
-    <text x="505" y="516" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">projected vs actual accuracy</text>
-    <line x1="505" y1="538" x2="505" y2="556" stroke="#9B9B92" stroke-width="1" marker-end="url(#arr-l)"/>
-
-    <!-- LEARN -->
-    <rect x="370" y="556" width="270" height="20" rx="3" fill="#D8F3DC"/>
-    <text x="505" y="570" text-anchor="middle" font-family="'DM Mono',monospace" font-size="9" fill="#2D6A4F" font-weight="500" letter-spacing="0.5">LEARN → accumulating</text>
-    <rect x="370" y="584" width="270" height="48" rx="6" fill="#D8F3DC" stroke="#52B788" stroke-width="1"/>
-    <text x="505" y="604" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" font-weight="500" fill="#1A1A18">accuracy_pct per ETF</text>
-    <text x="505" y="620" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#3D3D38">history improves correlation</text>
-    <path d="M640 608 Q660 608 660 388 Q660 168 640 168" fill="none" stroke="#2D6A4F" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
-
-    <!-- Governing principle -->
-    <rect x="30" y="660" width="610" height="52" rx="8" fill="#EAE6DC" stroke="rgba(26,26,24,0.08)" stroke-width="1"/>
-    <text x="335" y="681" text-anchor="middle" font-family="'DM Serif Display',Georgia,serif" font-size="11" font-style="italic" fill="#1A1A18">No model may both generate and authorize the same action.</text>
-    <text x="335" y="700" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="#6B6B64">Day 11 of 30-day dry run · 34/34 tests passing · ghost mode active</text>
-  </svg>
-  </div>
-
-  <!-- Loop 1 detail -->
   <div style="display:grid;gap:1.5rem;margin-bottom:2rem;">
     <div style="border:1px solid var(--border);border-radius:10px;padding:2rem;background:white;">
       <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Loop 1 — Paper Trade</div>
-      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:0.75rem;">Goal-directed constrained trading agent</h3>
-      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:1rem;">Operating within an explicit investment mandate — the same design philosophy as production robo-advisors. The guardrails (yield 4–35%, covered call concentration cap, £300 paper budget) are the mandate, not a limitation. The policy is the selection, scoring, and learning that happens within them.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Executes autonomously against £300 paper budget</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;dolphin3:8b proposes — Haiku gates independently</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Dividend verified after window closes</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Reliability weights updated from outcomes</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Counterfactual memory — all candidates stored</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Phase 2: watchlist expansion earns larger action space</div>
-      </div>
+      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin:0 0 0.75rem;">Select, record, check the outcome</h3>
+      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:0;">Runs daily and opens paper trades, as described in § 3.5. Outcome records exist. Whether those outcomes change later selections in a way that improves them has not been measured.</p>
     </div>
 
     <div style="border:1px solid var(--border);border-radius:10px;padding:2rem;background:white;">
       <div style="font-family:var(--mono);font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--green);margin-bottom:0.5rem;">Loop 2 — Market Correlation</div>
-      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:0.75rem;">Autonomous market intelligence system</h3>
-      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:1rem;">Perceives overnight index moves, computes FX-adjusted weekly correlations across 9 indices and 24 ETFs, and injects market context into Haiku's synthesis. Buddie now reasons about <em>why</em> the portfolio moved — not just that it moved. Projection accuracy accumulates daily toward mode switching.</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;9 indices, 24 ETFs, 4 FX pairs — daily append</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Weekly Pearson correlation, FX-adjusted, 3 windows</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;market_context.json → finance_shaped.json daily</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">✓ &nbsp;Projection accuracy tracked per ETF</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">→ &nbsp;Mode switching wires Loop 2 into Loop 1 (roadmap)</div>
-        <div style="font-size:0.85rem;color:var(--ink-mid);">→ &nbsp;Normal / Cautious / Defensive based on market regime</div>
-      </div>
+      <h3 style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin:0 0 0.75rem;">Project, then validate</h3>
+      <p style="font-size:0.9rem;color:var(--ink-mid);margin-bottom:0;">The projection and validation jobs still run on their timers. Their accuracy has not been re-measured for this revision, so no accuracy figure is given.</p>
     </div>
   </div>
 
-  <!-- Principle -->
   <div style="border-left:3px solid var(--green);padding:1.25rem 1.75rem;background:var(--cream-dark);border-radius:0 8px 8px 0;">
-    <p style="font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-style:italic;margin-bottom:0.4rem;">"No model may both generate and authorize the same action."</p>
-    <p style="font-size:0.85rem;color:var(--ink-light);">dolphin3:8b proposes. Haiku gates on anonymised data. The verification agent confirms outcomes. No single model controls the full loop. This is the governing principle of every agentic decision Buddie makes.</p>
+    <p style="font-family:var(--serif);font-size:1.1rem;color:var(--ink);font-style:italic;margin-bottom:0.4rem;">A loop is only closed when the measurement at the end changes what happens at the start.</p>
+    <p style="font-size:0.85rem;color:var(--ink-light);margin-bottom:0;">By that test, neither loop is proven closed today. Both run. That is the accurate claim.</p>
   </div>
 </section>
 
@@ -1098,190 +696,92 @@
   <div class="section-number">§ 4 — VitaNest</div>
   <h2>Kindle-inspired. Intelligence without noise.</h2>
 
-  <p>VitaNest is a Kotlin/Jetpack Compose Android app consuming VitaClaw's REST API. It follows a <strong>Kindle-inspired minimalist design language</strong> — cream backgrounds, near-black Noto Serif typography, no colour except where it carries meaning. No animations, no notifications badges, no engagement mechanics. Designed to inform, not to retain.</p>
+  <p>VitaNest is a Kotlin/Jetpack Compose Android app consuming the backend's REST API. It follows a <strong>Kindle-inspired minimalist design language</strong> — cream backgrounds, near-black serif typography, no colour except where it carries meaning. No engagement mechanics. Designed to inform, not to retain.</p>
 
-  <p>VitaNest contains zero business logic. No calculations, no hardcoded values, no data storage. VitaClaw is the brain. VitaNest is the window. The relationship is bidirectional: VitaNest reads live data from the API, and writes observation ratings back — feeding the confidence calibration loop.</p>
+  <p>VitaNest contains zero business logic. No calculations, no hardcoded values, no data storage. The backend is the brain; VitaNest is the window. That boundary held when the health source changed in October 2026: the app's health screens were pointed at the new health views without the app needing to know which device the data came from.</p>
 
   <div class="domain-grid">
     <div class="domain-card">
       <div class="domain-icon">🏠</div>
       <div class="domain-name">Home</div>
-      <div class="domain-desc">Three-domain turbine — Finance, Health, Energy. Recovery ring at centre with green/amber/red zones. Live agentic score. Daily quote. Everything at a glance.</div>
+      <div class="domain-desc">Finance, Health and Energy at a glance.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">📊</div>
       <div class="domain-name">Finance</div>
-      <div class="domain-desc">13 portfolio pies with donut chart. 67 holdings. DCA effectiveness with monthly buy/price chart. Dividend income tracking. Income stress simulation. Portfolio lens risk classification.</div>
+      <div class="domain-desc">Portfolio breakdown, dividend income tracking, DCA view, portfolio lens risk classification.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">⚡</div>
       <div class="domain-name">Energy</div>
-      <div class="domain-desc">Solar generation. EV charging cost vs solar offset. Self-sufficiency %. Daily savings. Live Myenergi data with 7d/30d/90d growth table.</div>
+      <div class="domain-desc">Solar generation, EV charging, self-sufficiency, 7d/30d/90d table.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">❤️</div>
       <div class="domain-name">Health</div>
-      <div class="domain-desc">Recovery ring. HRV, RHR, SpO2 trend charts with 92% warning and 90% critical threshold lines. 14-day and all-time toggle. Alert banners (critical/warning). 30-day baselines. On-demand Buddie synthesis.</div>
+      <div class="domain-desc">Trend charts with threshold lines, personal baselines, on-demand synthesis.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">🌱</div>
       <div class="domain-name">Growth</div>
-      <div class="domain-desc">7d, 30d, 90d views across Portfolio, Health, and Energy tabs. Equity, P&L, SpO2, recovery, solar — all in one place. CSV export. Share text.</div>
+      <div class="domain-desc">7d, 30d and 90d views across portfolio, health and energy. CSV export.</div>
     </div>
     <div class="domain-card">
       <div class="domain-icon">🐾</div>
       <div class="domain-name">Ask / Buddie</div>
-      <div class="domain-desc">Today's AI observations with confidence scores and domain tags. Rate each one (Useful / Wrong / Important) — ratings feed synthesis calibration. Ask anything. Offline mode via local model. Quick-action chips.</div>
+      <div class="domain-desc">The day's observations with confidence scores and domain tags. Rate each one. Ask a question. Offline mode through the local model.</div>
     </div>
   </div>
 
-  <h3>Portfolio lens — risk classification</h3>
-  <p>Every holding is classified across four dimensions: currency exposure (GBP/USD/mixed), geography (UK/US/global/mixed), income type (dividend/growth/blend), and asset class (ETF/equity/trust/bond). The portfolio lens screen surfaces concentration risk, currency drag, and income distribution at a glance — without any manual tagging.</p>
+  <p>Two honest notes. The screen descriptions above come from the May build and the app has not been re-audited screen by screen for this revision. And usage is light: 5 questions were asked through the app in the 30 days to 15 Nov 2026, and almost every observation it shows goes unrated.</p>
 
-  <h3>Health charts — threshold alerting</h3>
-  <p>SpO2 charts display two threshold lines: 92% warning (amber) and 90% critical (red). Breaches surface as alert banners with exact dates and values. The 14-day and all-time toggle changes the chart range with a single tap. 30-day baselines anchor each metric so trends are contextualised against personal history, not population averages.</p>
+  <h3>Portfolio lens — risk classification</h3>
+  <p>Every holding is classified across four dimensions: currency exposure, geography, income type and asset class. The lens screen surfaces concentration risk, currency drag and income distribution without manual tagging.</p>
 </section>
 
 
 <!-- Gallery -->
 <section class="section" id="gallery">
   <div class="section-number">§ 5 — The App in Action</div>
-  <h2>Live screenshots. No mockups.</h2>
-  <p>All screens shown are from the live running system. Data shown is for illustrative purposes only and is not financial or medical advice.</p>
-
-  <div class="gallery-grid">
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Home screen"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Home</div>
-        <div class="phone-caption-desc">Three-domain turbine. Energy, Finance, Health. Recovery ring. Live score.</div>
-      </div>
-    </div>
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Finance DCA detail"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Finance · DCA</div>
-        <div class="phone-caption-desc">Monthly buys vs avg price. Price distribution. DCA effectiveness. Dividend history. Verdict.</div>
-      </div>
-    </div>
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Growth table"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Growth</div>
-        <div class="phone-caption-desc">7d / 30d / 90d toggle. Daily equity, P&L, income vs target. CSV export.</div>
-      </div>
-    </div>
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame phone-frame-dark">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Health analytics"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Health Analytics</div>
-        <div class="phone-caption-desc">SpO2 chart with 92% warning / 90% critical thresholds. Alert banners. 30-day baselines.</div>
-      </div>
-    </div>
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Buddie health synthesis"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Buddie Health Insight</div>
-        <div class="phone-caption-desc">Root cause analysis. Worst period identified. Actionable recommendation with personal baseline.</div>
-      </div>
-    </div>
-
-    <div class="phone-frame-wrap">
-      <div class="phone-frame">
-        <div class="phone-notch"></div>
-        <div class="phone-screen">
-          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Buddie observations"/>
-        </div>
-      </div>
-      <div class="phone-caption">
-        <div class="phone-caption-title">Ask · Buddie</div>
-        <div class="phone-caption-desc">26 AI observations. Confidence scores. Domain tags. Rate each — feeds synthesis calibration.</div>
-      </div>
-    </div>
-
-  </div>
+  <h2>Screenshots withdrawn in this revision.</h2>
+  <p>The May paper showed six screenshots from the live app. They displayed real account and health figures, and they predate the change of broker and health device. They have been removed. Redacted captures from the current build will replace them.</p>
 </section>
 
 <!-- Opportunity -->
 <section class="section" id="opportunity">
   <div class="section-number">§ 6 — The Opportunity</div>
   <h2>Why local-first personal finance intelligence matters.</h2>
-  <p>India has over 100 million retail investors. The UK has 11 million ISA holders. Every one of them shares their most sensitive financial data with cloud platforms they do not own, cannot audit, and pay monthly for.</p>
+  <p>Retail investors in the UK, India and elsewhere hand their most sensitive financial data to platforms they do not own and cannot audit, and get back tools that forget their decisions between sessions.</p>
 
   <div class="highlight-box">
-    <h3>The personal data model is broken for retail investors.</h3>
-    <p>Cloud AI platforms monetise your financial data, forget your decision history, and charge you for the privilege. The session ends. The system forgets you.</p>
-    <p>Buddie.local inverts this: your data stays on your device, the system builds permanent memory of your financial history, and the running cost is near-zero. This is not a feature difference. It is an architectural difference.</p>
+    <h3>The aim: your data on your machine, and model use you can see.</h3>
+    <p>Buddie.local's aim is the inverse of the usual arrangement: data stored on hardware you own, a permanent record of your own decisions, and cloud models used only where you choose and can see.</p>
+    <p>This revision shows that aim is not fully met yet, and says exactly where. Publishing that is the point.</p>
   </div>
 
-  <p>The architecture is <strong>broker-agnostic</strong>. The same pattern works with Zerodha, Groww, ICICI Direct, Hargreaves Lansdown, AJ Bell — any broker with an API. A retail investor in Mumbai, Bangalore, or London could run this on hardware they already own.</p>
-  <p>India's retail investor base is young, mobile-first, and cost-conscious. A system providing institutional-grade portfolio intelligence privately, locally, at near-zero cost addresses a gap that no current product fills at this price point.</p>
+  <p>The architecture is <strong>broker-agnostic</strong>, and in 2026 that stopped being a slogan. The broker changed from one with a live API to one with only a monthly CSV export, and the import layer reads either. The migration is still in progress (see Limitations). The same pattern should work for any broker that offers an API or a file export; so far it has been tried with exactly two.</p>
 </section>
 
 <!-- Cost -->
 <section class="section" id="cost">
   <div class="section-number">§ 7 — Cost Reality</div>
-  <h2>What it actually costs. Observed, not estimated.</h2>
+  <h2>What it costs. What is measured, and what is not.</h2>
 
   <table class="cost-table">
-    <thead><tr><th>Component</th><th>Purpose</th><th>Observed daily cost</th></tr></thead>
+    <thead><tr><th>Component</th><th>Purpose</th><th>Cost basis</th></tr></thead>
     <tbody>
-      <tr><td>Polars (T1)</td><td>Portfolio queries, dividend calculations, income tracking</td><td class="zero">£0.00</td></tr>
-      <tr><td>Gemini Flash (T2)</td><td>General queries — 250/day free quota</td><td class="zero">£0.00</td></tr>
-      <tr><td>Llama 3.3 70B (T3)</td><td>Fallback — OpenRouter free tier</td><td class="zero">£0.00</td></tr>
-      <tr><td>Dolphin 3 (Offline)</td><td>Sensitive queries — fully local, no API</td><td class="zero">£0.00</td></tr>
-      <tr><td>Claude Haiku (Synthesis)</td><td>3 domain synthesis agents, morning brief</td><td class="paid">~£0.04/day</td></tr>
-      <tr><td>Hardware</td><td>Mini PC — personal computer that also runs VitaClaw</td><td class="zero">Already owned</td></tr>
-      <tr><td><strong>Total observed</strong></td><td>Full system — finance, health, energy, Android app, synthesis</td><td class="paid"><strong>~£1.20/month</strong></td></tr>
+      <tr><td>Polars (local)</td><td>Portfolio queries, dividend calculations, income tracking</td><td class="zero">No model cost</td></tr>
+      <tr><td>Local models (CPU)</td><td>Offline mode and health synthesis</td><td class="zero">No API cost · tens of seconds per answer</td></tr>
+      <tr><td>Claude Haiku (cloud)</td><td>Finance and energy synthesis</td><td class="paid">Hard cap $0.03 per run</td></tr>
+      <tr><td>Coding agent (cloud)</td><td>Issue to pull request</td><td class="paid">Cap $2.50/month · about $0.50 used by mid-Nov</td></tr>
+      <tr><td>Hardware</td><td>Mini PC — a personal computer that also runs this</td><td class="zero">Already owned</td></tr>
+      <tr><td><strong>Total</strong></td><td>Whole system</td><td class="paid"><strong>Not re-measured</strong></td></tr>
     </tbody>
   </table>
 
-  <div class="metric-row">
-    <div class="metric-cell">
-      <div class="metric-val">~92%</div>
-      <div class="metric-lbl">Queries resolved at zero cost via Polars or free-tier LLMs</div>
-    </div>
-    <div class="metric-cell">
-      <div class="metric-val">£0.0004</div>
-      <div class="metric-lbl">Estimated median cost per query across all tiers</div>
-    </div>
-    <div class="metric-cell">
-      <div class="metric-val">£0.001</div>
-      <div class="metric-lbl">Cost per ensemble deliberation (multi-model council)</div>
-    </div>
-  </div>
+  <p>The May paper said about 92% of queries cost nothing and put the whole system at about £1.20 a month. Both figures are withdrawn. The first rested on a query volume that has since fallen to 7 questions in 30 days; the second was not re-measured for this revision. What can be stated are the caps above, which are enforced, not estimated.</p>
 
-  <p>This started on a Samsung A55 running Termux. No server. No cloud spend. Every hardware upgrade earned through demonstrated need. <strong>If you have a laptop and a weekend, you can start building this today.</strong></p>
+  <p>This started on a Samsung A55 running Termux. No server. Every hardware upgrade earned through demonstrated need. <strong>If you have a laptop and a weekend, you can start building this today.</strong></p>
 </section>
 
 <!-- Status -->
@@ -1289,14 +789,19 @@
   <div class="section-number">§ 8 — Current State</div>
   <h2>What is live. What is next.</h2>
   <div class="principles">
-    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Five-tier cost-aware routing</strong> — Polars → Gemini → Llama → Haiku → Offline. Live, tested, observable via logs.</div></div>
-    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Eight named agents</strong> — T212, Whoop, Myenergi, BuddieSynthesis × 3, System, Web, Email. Each independent, each logged.</div></div>
-    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>VitaNest Android app</strong> — six screens, bidirectional API, Kindle-inspired UI, zero hardcoded logic.</div></div>
-    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>30-day ghost run active</strong> — Day 7. Observations logged with confidence scores. User ratings feeding calibration. Zero autonomous actions.</div></div>
-    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Self-extension pipeline live</strong> — /prompt → /code → sandbox → review → skills/. Human approval required at every promotion.</div></div>
-    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Cross-domain synthesiser</strong> — Finance × Health × Energy correlation. After Day 14.</div></div>
-    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Confidence gates</strong> — composite model after 30+ rated observations. Autonomous actions unlock when track record earns them.</div></div>
-    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Regret database</strong> — wrong observations logged permanently. System reads own failure history before generating hypotheses.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Health source moved</strong> — Garmin is primary (13 of 13 runs on its timer), Health Connect is the second source.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Broker import in both modes</strong> — live API and monthly CSV, with independent daily prices and valuation.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Bank CSV import</strong> — with category mapping and a suspense list.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Monthly holdings income report</strong> — by email, since late October 2026.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Mission runner and scouts</strong> — Web Scout daily; Income Scout scheduled monthly.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Coding agent</strong> — GitHub issue in, pull request out, sandboxed tests, human merge.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Tests and backup</strong> — 81 test functions in 10 files; a database backup runs nightly.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Ghost mode</strong> — on. Autonomous writes off. Zero autonomous real-money actions.</div></div>
+    <div class="principle"><span class="principle-num" style="color:var(--green-light)">✓</span><div class="principle-text"><strong>Health synthesis on a local model</strong> — switched in November 2026.</div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Finish the broker switch</strong> — retire the jobs for the old providers, which still run.</div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Verify what finance synthesis sends to the cloud model</strong> — before making any claim about it.</div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>CI, a restore drill and an off-machine backup copy.</strong></div></div>
+    <div class="principle"><span class="principle-num">→</span><div class="principle-text"><strong>Planned, not built</strong> — money planning: a retirement calculator and a monthly net-worth report.</div></div>
   </div>
 </section>
 
@@ -1304,29 +809,51 @@
 <section class="section" id="limitations">
   <div class="section-number">§ 9 — Honest Limitations</div>
   <h2>What this is not. What still needs building.</h2>
-  <p>A credible architecture document acknowledges its boundaries clearly.</p>
+  <p>A credible architecture document acknowledges its boundaries clearly. This list is longer than it was in May because more was checked.</p>
   <div class="limitation-box">
     <h4>Current limitations</h4>
     <div class="lim-item">Single-user personal system. Not productised, multi-tenant, or production-hardened for regulated financial services.</div>
-    <div class="lim-item">Self-extension pipeline requires human review before promotion. Generated code is never automatically trusted.</div>
-    <div class="lim-item">Synthesis confidence calibration in progress — 30-day dry run active. Trade agent is live; autonomous synthesis actions unlock when accuracy record earns them. Human confirmation is the governance gate, not a workaround.</div>
-    <div class="lim-item">No real-time market data feed — positions refresh daily from broker API, not tick-by-tick.</div>
-    <div class="lim-item">The capability progress framework is self-defined. It measures milestones, not an industry benchmark.</div>
+    <div class="lim-item">Health synthesis ran through a cloud model until November 2026, contrary to the system's own rule. It now runs on a local model. That is a configuration setting, not an architectural guarantee, and nothing yet tests that it stays that way.</div>
+    <div class="lim-item">Finance and energy synthesis are sent to a cloud model. Whether tickers are anonymised in everything that is sent has not been verified.</div>
+    <div class="lim-item">Other features read health data to answer a question or raise an alert, including the council and the proactive alerts. Which model each of them uses has not been audited yet, so health data staying local is only established for the scheduled synthesis and the reports.</div>
+    <div class="lim-item">The feedback loop does not work as a loop. In 90 days: 301 observations rated useful, none rated wrong or important, 1,835 unrated. Three quarters of observations are stored hidden.</div>
+    <div class="lim-item">Almost nobody asks it questions: 7 in 30 days. The question-answering path described in § 1 is the least-used part of the system.</div>
+    <div class="lim-item">Agent "success" means the process exited cleanly. Jobs for providers that are being retired still run and still report success.</div>
+    <div class="lim-item">The broker migration is unfinished. One holdings snapshot has been imported from the new broker so far, and both sources are still configured.</div>
+    <div class="lim-item">With no API at the new broker, holdings are at most as fresh as the last monthly export. No real-time market data feed.</div>
+    <div class="lim-item">Tests exist (81 functions) but nothing runs them automatically. There is no CI.</div>
+    <div class="lim-item">Backups run nightly to the same machine. No restore drill has been recorded since August 2026, and an off-machine copy is not routine.</div>
+    <div class="lim-item">Confidence scores are uncalibrated.</div>
+    <div class="lim-item">Paper trading: the candidate universe needs re-basing after the broker change, and one retired rule is not confirmed removed.</div>
+    <div class="lim-item">Single machine, CPU only. Local models take tens of seconds per answer.</div>
+    <div class="lim-item">Internal architecture documents predate the changes in this revision and are being rewritten.</div>
+    <div class="lim-item">Earlier self-assigned readiness scores have been retired. They were asserted, not derived.</div>
     <div class="lim-item">FCA regulatory boundary: this system produces observations and decision support, not regulated financial advice.</div>
-    <div class="lim-item">GitHub repository currently private. Key architectural modules will be published to support independent review.</div>
+    <div class="lim-item">The main code repository is private. The source of this paper is public.</div>
+  </div>
+
+  <div class="limitation-box">
+    <h4>Corrections to the May 2026 version</h4>
+    <div class="lim-item">"Health data routes to local-only models, enforced by architecture" — wrong. It was a configuration setting, and it pointed at a cloud model.</div>
+    <div class="lim-item">The claim that tickers are anonymised before any cloud call — not verified; withdrawn.</div>
+    <div class="lim-item">"About 92% of queries at zero cost" and the monthly cost total — withdrawn; see § 7.</div>
+    <div class="lim-item">The 34-test count, the 30-day ghost run and the day counters — replaced by dated measurements.</div>
+    <div class="lim-item">The list of eight agents and the data sources — out of date; see § 1 and § 2.</div>
+    <div class="lim-item">Cross-domain synthesis listed as future work — it ran daily until 16 November 2026 and is now switched off, because it forwarded health observations to a cloud model. The daily health synthesis is off too.</div>
+    <div class="lim-item">Trade execution described as ready — dropped; see § 3.5.</div>
   </div>
 </section>
 
 <footer>
   <div>
     <div class="footer-brand">☘ Buddie.local</div>
-    <div class="footer-sub">Private decision intelligence · UK · May 2026</div>
-    <div class="footer-sub">Built solo · Personal time · Personal hardware · For illustrative purposes only · Not financial advice</div>
+    <div class="footer-sub">Private decision intelligence · UK · May 2026 · revised November 2026</div>
+    <div class="footer-sub">Built solo · Personal time · Personal hardware · Not financial advice</div>
   </div>
   <div class="footer-links">
     <a href="https://x.com/vitaclawai" target="_blank">X thread ↗</a>
     <a href="https://x.com/vitaclawai" target="_blank">@vitaclawai ↗</a>
-    <a href="https://github.com/wizardofchat/openclaw-lab" target="_blank">GitHub ↗</a>
+    <a href="https://github.com/wizardofchat/buddie-local" target="_blank">Paper source ↗</a>
   </div>
 </footer>
 
